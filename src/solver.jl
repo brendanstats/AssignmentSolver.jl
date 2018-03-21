@@ -159,12 +159,6 @@ function step4!{G <: Real}(costMatrix::Array{G, 2},
     minval = typemax(G)::G
     minrow = -1
     mincol = -1
-
-    #println("Rows covered: ", count(rowCover))
-    #println("Columns covered: ", count(colCover))
-    #println("Rows starred: ", count(starredRow2Col .!= 0))
-    #println("Columns starred: ", count(starredCol2Row .!= 0))
-    #println("Rows primed: ", count(primedRow2Col .!= 0))
     
     ##loop popping items off queue so that uncovered columns can be added
     while length(loopCols) > 0::Int
@@ -178,33 +172,16 @@ function step4!{G <: Real}(costMatrix::Array{G, 2},
 
             ##compute adjusted cost and prime zeros
             if zero_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
-            #if zero(G) == costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
-            #if costMatrix[ii, jj]::G == rowOffsets[ii]::G + colOffsets[jj]::G
-            #entry = costMatrix[ii, jj] - (rowOffsets[ii] + colOffsets[jj])
-            #if entry == zero(G)
-                primedRow2Col[ii] = jj::Int
-                #println("Prime row: $ii, col $jj")
-                ##If no starred zero in row goto step 5, otherwise cover row and
-                ##uncover column of starred zero.  We then add uncovered column
-                ##to the queue.
-                if iszero(starredRow2Col[ii]) # == zero(T)
+                primedRow2Col[ii] = jj
+                if iszero(starredRow2Col[ii])
                     minrow = ii
                     mincol = jj
                     return 5, minval, minrow, mincol
                 else
                     rowCover[ii] = true
                     colCover[starredRow2Col[ii]] = false
-                    #println("Covering row $ii")
-                    #println("Uncovering col $(starredRow2Col[ii])")
                     enqueue!(loopCols, starredRow2Col[ii])
                 end
-                ##track minvalue
-            #else
-            #    if entry < minval
-            #        minval = entry
-            #        minrow = ii
-            #        mincol = jj
-            #    end
             end
         end #end for
     end #end while
@@ -220,32 +197,8 @@ function step4!{G <: Real}(costMatrix::Array{G, 2},
         return 7, minval, minrow, mincol
     end
         
-    ##If min value has been covered by row, redo search
-    #=
-    if rowCover[minrow] || colCover[mincol]
-        for jj in range(one(T), m)
-            if colCover[jj]
-                continue
-            end
-            for ii in range(one(T), n)
-                if rowCover[ii]
-                    continue
-                end
-                entry = costMatrix[ii, jj] - (rowOffsets[ii] + colOffsets[jj])
-                if entry < minval
-                    minval = entry
-                    minrow = ii
-                    mincol = jj
-                end
-            end
-        end
-    end
-    =#
-
     for jj in find(.!colCover), ii in find(.!rowCover)
-        #if (costMatrix[ii, jj]::G - rowOffsets[ii]::G - colOffsets[jj]::G)::G < minval::G
         if adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets) < minval
-            #minval = costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]::G
             minval = adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
             minrow = ii::Int
             mincol = jj::Int
@@ -266,7 +219,6 @@ function step4!{G <: Real}(costMatrix::Array{G, 2},
 
     elseif minval::G < zero(G)
         warn("minimum is less than 0: $minval")
-        #colOffsets[mincol] += minval
         colOffsets[mincol] = costMatrix[minrow, mincol]::G - rowOffsets[minrow]::G
         primedRow2Col[:] = 0::Int
         colCover[:] = false
@@ -364,11 +316,11 @@ function zero_cost{G <: Real}(ii::Integer, jj::Integer, costMatrix::Array{G, 2},
     return iszero(adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets))
 end
 
-function adjusted_cost{G <: Real}(ii::Integer, jj::Integer, costMatrix::Array{G, 2},
+function adjusted_cost{G <: Real}(ii::Integer, jj::Integer,
+                                  costMatrix::Array{G, 2},
                                   rowOffsets::Array{G, 1},
                                   colOffsets::Array{G, 1})
-    potential = rowOffsets[ii] + colOffsets[jj]
-    return costMatrix[ii, jj] - potential
+    return costMatrix[ii, jj] - (rowOffsets[ii] + colOffsets[jj])
 end
 
 """
@@ -376,12 +328,12 @@ end
 
 Compute the adjustedCostMatrix[ii, jj] = costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
 """
-function compute_adjusted_cost{G <: Real}(costMatrix::Array{G, 2},
-                                     rowOffsets::Array{G, 1},
-                                     colOffsets::Array{G, 1})
+function adjusted_cost{G <: Real}(costMatrix::Array{G, 2},
+                                  rowOffsets::Array{G, 1},
+                                  colOffsets::Array{G, 1})
     out = Array{G}(size(costMatrix))
     for jj in 1:length(colOffsets), ii in 1:length(rowOffsets)
-        out[ii, jj] = costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
+        out[ii, jj] = costMatrix[ii, jj] - (rowOffsets[ii] + colOffsets[jj])
     end
     return out
 end
@@ -389,7 +341,7 @@ end
 """
     lsap_solver(costMatrix) -> rowAssignments, rowOffsets, colOffsets
 """
-function lsap_solver{G <: Real}(costMatrix::Array{G, 2})
+function lsap_solver{G <: Real}(costMatrix::Array{G, 2}; verbose::Bool = false)
     if size(costMatrix, 1) > size(costMatrix, 2)
         
         #warn("more rows than columns, 0 assigments correspond to empty rows")
@@ -425,7 +377,9 @@ function lsap_solver{G <: Real}(costMatrix::Array{G, 2})
                    rowCover, colCover,
                    starredRow2Col, starredCol2Row, n, m)
     while true
-        println("step = ", nstep)
+        if verbose
+            println("step = ", nstep)
+        end
         if nstep == 3
             nstep = step3!(colCover, starredRow2Col, n, m)
         elseif nstep == 4
@@ -447,9 +401,11 @@ function lsap_solver{G <: Real}(costMatrix::Array{G, 2})
         else
             error("Non-listed step introduced")
         end
-        if any(rowOffsets .< 0.0)
-            rowmin = minimum(rowOffsets)
-            println("Row minimum: $rowmin")
+        if verbose
+            if any(rowOffsets .< 0.0)
+                rowmin = minimum(rowOffsets)
+                println("Row minimum: $rowmin")
+            end
         end
     end
 
@@ -460,11 +416,12 @@ end
     lsap_solver_initialized!(costMatrix, rowOffsets, colOffsets) -> rowAssignments, rowOffsets, colOffsets
 """
 function lsap_solver_initialized!{G <: Real}(costMatrix::Array{G, 2},
-                                                           rowInitial::Array{Int, 1},
-                                                           rowOffsets::Array{G, 1},
-                                                           colOffsets::Array{G, 1};
-                                                           check::Bool = true,
-                                                           adjustRowOffsets::Bool = true)
+                                             rowInitial::Array{Int, 1},
+                                             rowOffsets::Array{G, 1},
+                                             colOffsets::Array{G, 1};
+                                             check::Bool = true,
+                                             adjustRowOffsets::Bool = true,
+                                             verbose::Bool = false)
     if size(costMatrix, 1) > size(costMatrix, 2)
         
         warn("more rows than columns, 0 assigments correspond to empty rows")
@@ -542,7 +499,9 @@ function lsap_solver_initialized!{G <: Real}(costMatrix::Array{G, 2},
                        rowCover, colCover,
                        starredRow2Col, starredCol2Row, n, m)
     while true
-        println("step = ", nstep)
+        if verbose
+            println("step = ", nstep)
+        end
         if nstep == 3
             nstep = step3!(colCover, starredRow2Col, n, m)
         elseif nstep == 4
