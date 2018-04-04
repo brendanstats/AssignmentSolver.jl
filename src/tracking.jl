@@ -28,7 +28,6 @@ function lsap_solver_tracking{G <: Real}(costMatrix::Array{G, 2};
     starredCol2Row = zeros(Int, m) #either zero or row index of starred zero
     primedRow2Col = zeros(Int, n) #either zero or column index of primed zero
     minval = typemax(G)::G #tracking minimum value
-
     zeroCol2Row = Dict{Int, Array{Int, 1}}()
     for jj in 1:m
         zeroCol2Row[jj] = Int[]
@@ -98,9 +97,12 @@ function lsap_solver_tracking{G <: Real}(costMatrix::Array{G, 2};
             rowCover[ii] = false
         end
     end
-    
+
+    iter = 0
     while true
+        iter += 1
         if verbose
+            println("Iteration: $iter")
             println("step = ", nstep)
         end
         if nstep == 3
@@ -127,14 +129,187 @@ function lsap_solver_tracking{G <: Real}(costMatrix::Array{G, 2};
             error("Non-listed step introduced")
         end
         if verbose
-            if any(rowOffsets .< 0.0)
-                rowmin = minimum(rowOffsets)
-                println("Row minimum: $rowmin")
+            ctrow = count(rowCover)
+            ctcol = count(colCover)
+            ct = n - count(iszero.(starredRow2Col))
+            if length(minPoints) > 1
+                println("Value: $minval, Assigned: $ct, Covered Rows: $ctrow, Covered Cols: $ctcol")
+            else
+                println("Value: $minval, Assigned: $ct, Covered Rows: $ctrow, Covered Cols: $ctcol, Point: $minPoints")
             end
+            println("")
         end
     end
 
     return starredRow2Col, rowOffsets, colOffsets
+end
+
+function lsap_solver_tracking!{G <: Real}(costMatrix::Array{G, 2},
+                                          rowOffsets::Array{G, 1},
+                                          colOffsets::Array{G, 1},
+                                          rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
+                                          check::Bool = true,
+                                          verbose::Bool = false)
+    
+    ##Flip if more rows than columns
+    if size(costMatrix, 1) > size(costMatrix, 2)
+
+        ##Switch initial assignment from rows map to column
+        colInitial = zeros(eltype(rowInitial), size(costMatrix, 2))
+        for (ii, jj) in enumerate(IndexLinear(), rowInitial)
+            if jj != 0::Int
+                colInitial[jj] = ii
+            end
+        end
+
+        ##Find optimal assignment for transpose
+        colAssignments, colOffsets, rowOffsets = lsap_solver_tracking(costMatrix')
+        
+        ##Switch from returned row assignment of transpose to row assigment of input
+        rowAssignments = zeros(Int, size(costMatrix, 1))
+        for (jj, row) in enumerate(IndexLinear(), colAssignments)
+            rowAssignments[row] = jj
+        end
+        return rowAssignments, rowOffsets, colOffsets
+    end
+    
+    ##Define algorithm variables
+    n, m = size(costMatrix) #set matrix dimensions
+    rowCover = falses(n) #row covered true/false
+    colCover = falses(m) #column covered true/false
+    starredRow2Col = zeros(Int, n) #either zero or column index of starred zero
+    starredCol2Row = zeros(Int, m) #either zero or row index of starred zero
+    primedRow2Col = zeros(Int, n) #either zero or column index of primed zero
+    minval = typemax(G)::G #tracking minimum value
+    zeroCol2Row = Dict{Int, Array{Int, 1}}()
+    for jj in 1:m
+        zeroCol2Row[jj] = Int[]
+    end
+    minPoints = Array{Tuple{Int, Int}, 1}(0)
+    colsUncovered = Array{Int}(0)
+    rowsUncovered = Array{Int}(0)
+    
+    ##Find row minimums
+    for jj in 1:m, ii in 1:n
+        if costMatrix[ii, jj] < rowOffsets[ii]
+            rowOffsets[ii] = costMatrix[ii, jj]
+        end
+    end
+    
+    ##Check that the row and column offsets are not too high at any point
+    if check
+        for jj in 1:m, ii in 1:n
+            if costMatrix[ii, jj] < (rowOffsets[ii] + colOffsets[jj])
+                colOffsets[jj] = costMatrix[ii, jj] - rowOffsets[ii]
+            end
+        end
+    end
+    
+    ##Find all zeros
+    for jj in 1:m, ii in 1:n
+        if zero_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
+            push!(zeroCol2Row[jj], ii)
+        end
+    end
+
+    ##Initialize with supplied assignments, checking that they still meet assignment criteria
+    for (ii, jj) in enumerate(IndexLinear(), rowInitial)
+        if !iszero(jj) && !colCover[jj]
+            if zero_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
+                rowCover[ii] = true
+                colCover[jj] = true
+                starredRow2Col[ii] = jj
+                starredCol2Row[jj] = ii
+            end
+        end
+    end
+    
+    ##Check remaining zeros
+    for jj in 1:m
+        for ii in zeroCol2Row[jj]
+            if !rowCover[ii] && !colCover[jj]
+                rowCover[ii] = true
+                colCover[jj] = true
+                starredRow2Col[ii] = jj
+                starredCol2Row[jj] = ii
+            end
+        end
+        
+        ##Add still uncovered columns to column ids
+        if !colCover[jj]
+            push!(colsUncovered, jj)
+        end
+    end
+
+    ##Check if initial assignment is optimal
+    if sum(colCover) == n
+        nstep = 7
+    else
+        nstep = 4
+    end
+
+    ##Uncover all rows
+    for ii in 1:n
+        push!(rowsUncovered, ii)
+        if rowCover[ii]
+            rowCover[ii] = false
+        end
+    end
+
+    iter = 0
+    while true
+        iter += 1
+        if verbose
+            println("Iteration: $iter")
+            println("step = ", nstep)
+        end
+        if nstep == 3
+            nstep = step3_tracking!(colCover, starredCol2Row, n, m, colsUncovered)
+        elseif nstep == 4
+            nstep, minval, minPoints = step4_tracking!(costMatrix, rowOffsets, colOffsets,
+                                              rowCover, colCover,
+                                              starredRow2Col, starredCol2Row,
+                                              primedRow2Col,
+                                              zeroCol2Row,
+                                              minval, minPoints, n, m, colsUncovered, rowsUncovered)
+        elseif nstep == 5
+            nstep = step5_tracking!(rowCover, colCover,
+                           starredRow2Col, starredCol2Row,
+                           primedRow2Col,
+                           minPoints, n, m, rowsUncovered)
+        elseif nstep == 6
+            nstep = step6_tracking!(rowOffsets, colOffsets,
+                           rowCover, colCover,
+                           zeroCol2Row, minval, minPoints, n, m)
+        elseif nstep == 7
+            break
+        else
+            error("Non-listed step introduced")
+        end
+        if verbose
+            ctrow = count(rowCover)
+            ctcol = count(colCover)
+            ct = n - count(iszero.(starredRow2Col))
+            if length(minPoints) > 1
+                println("Value: $minval, Assigned: $ct, Covered Rows: $ctrow, Covered Cols: $ctcol")
+            else
+                println("Value: $minval, Assigned: $ct, Covered Rows: $ctrow, Covered Cols: $ctcol, Point: $minPoints")
+            end
+            println("")
+        end
+    end
+
+    return starredRow2Col, rowOffsets, colOffsets
+end
+
+function lsap_solver_tracking{G <: Real}(costMatrix::Array{G, 2},
+                                         rowOffsets::Array{G, 1},
+                                         colOffsets::Array{G, 1},
+                                         rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
+                                         check::Bool = true,
+                                         verbose::Bool = false)
+    return lsap_solver_tracking!(costMatrix, copy(rowOffsets), copy(colOffsets), rowInitial,
+                                 check = check, verbose = verbose)
 end
 
 
@@ -234,6 +409,10 @@ function step4_tracking!{G <: Real}(costMatrix::Array{G, 2},
         for ii in rowsUncovered
             val = adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
             if  val < minval
+                if iszero(val)
+                    push!(zeroCol2Row[jj], ii)
+                    return 4, minval, minPoints
+                end
                 empty!(minPoints)
                 minval = val
                 push!(minPoints, (ii, jj))
