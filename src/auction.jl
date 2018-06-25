@@ -653,7 +653,7 @@ function asymmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Arra
                             println("updating λ")
                         end
                         scolCosts = sort(colCosts)
-                        λ = scolCosts[nextracols]
+                        λ = scolCosts[nextracols] #change this?
                         ncolbelowλ = findprev(x -> x < λ, scolCosts, nextracols) #expect this to be nextracols - 1 unless there are ties, in which case it will be smaller
                     end
                     if iszero(unassignedcol)
@@ -720,6 +720,18 @@ function asymmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Arra
         nassigned = count(!iszero, r2c)
     end
 
+    #for ii in 1:nrow
+    #    if iszero(r2c[ii]) && length(nzrange(trewardMatrix, ii)) == 1
+    #        r2c[ii] = rows[nzrange(trewardMatrix, ii)[1]]
+    #        c2r[nzrange(trewardMatrix, ii)[1]] = ii #error here?????
+    #        rowCosts[ii] = -λ
+    #        colCosts[nzrange(trewardMatrix, ii)[1]] = λ
+    #        nassigned += 1
+    #    else
+    #        r2c, c2r, rowCosts, colCosts, unassignedrow, ncolbelowλ = forward_iteration(ii, r2c, c2r, trewardMatrix, rowCosts, colCosts, ncol, ncolbelowλ, ε, λ)
+    #    end
+    #end
+    
     #set rows with a single entry
     rows = rowvals(trewardMatrix)
     for ii in 1:nrow
