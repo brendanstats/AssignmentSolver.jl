@@ -2,31 +2,31 @@
 #http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html
 
 """
-    step1!(costMatrix, rowOffsets) -> nextstep
+        step1!(costMatrix, rowOffsets) -> nextstep
 
-Initialization, set rowOffsets to row minimum, returns step2
-"""
-function step1!{G <: Real}(costMatrix::Array{G, 2}, rowOffsets::Array{G, 1})
+    Initialization, set rowOffsets to row minimum, returns step2
+    """
+function step1!(costMatrix::Array{G, 2}, rowOffsets::Array{G, 1}) where G <: Real
     rowOffsets[:] = vec(minimum(costMatrix, 2))::Array{G, 1}
     return 2
 end
 
 """
-    step2!(costMatrix, rowOffsets, colOffsets, rowCover, colCover,
-           starredRow2Col, starredCol2Row, n, m) -> step 3
+        step2!(costMatrix, rowOffsets, colOffsets, rowCover, colCover,
+               starredRow2Col, starredCol2Row, n, m) -> step 3
 
-Find 0's where cost[ii, jj] == rowOffsets[ii] + colOffsets[jj].  If
-cover row ii and column jj are false set them to true and star 0.
-When staring add to starredRow2Col and starredCol2Row
-"""
-function step2!{G <: Real}(costMatrix::Array{G, 2},
-                           rowOffsets::Array{G, 1},
-                           colOffsets::Array{G, 1},
-                           rowCover::Array{Bool, 1},
-                           colCover::Array{Bool, 1},
-                           starredRow2Col::Array{Int, 1},
-                           starredCol2Row::Array{Int, 1},
-                           n::Int, m::Int)
+    Find 0's where cost[ii, jj] == rowOffsets[ii] + colOffsets[jj].  If
+    cover row ii and column jj are false set them to true and star 0.
+    When staring add to starredRow2Col and starredCol2Row
+    """
+function step2!(costMatrix::Array{G, 2},
+                rowOffsets::Array{G, 1},
+                colOffsets::Array{G, 1},
+                rowCover::Array{Bool, 1},
+                colCover::Array{Bool, 1},
+                starredRow2Col::Array{Int, 1},
+                starredCol2Row::Array{Int, 1},
+                n::Int, m::Int) where G <: Real
     for jj in 1:m
         for ii in 1:n
             ##skip row if covered
@@ -36,8 +36,8 @@ function step2!{G <: Real}(costMatrix::Array{G, 2},
 
             ##check if adjusted cost is zero
             if zero_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
-            #if costMatrix[ii, jj] == rowOffsets[ii] + colOffsets[jj]
-            #if zero(G) == costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
+                #if costMatrix[ii, jj] == rowOffsets[ii] + colOffsets[jj]
+                #if zero(G) == costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
                 rowCover[ii] = true
                 colCover[jj] = true
                 starredRow2Col[ii] = jj::Int
@@ -58,14 +58,14 @@ function step2!{G <: Real}(costMatrix::Array{G, 2},
     end
 end
 
-function step2_col!{G <: Real}(costMatrix::Array{G, 2},
-                               rowOffsets::Array{G, 1},
-                               colOffsets::Array{G, 1},
-                               rowCover::Array{Bool, 1},
-                               colCover::Array{Bool, 1},
-                               starredRow2Col::Array{Int, 1},
-                               starredCol2Row::Array{Int, 1},
-                               n::Int, m::Int)
+function step2_col!(costMatrix::Array{G, 2},
+                    rowOffsets::Array{G, 1},
+                    colOffsets::Array{G, 1},
+                    rowCover::Array{Bool, 1},
+                    colCover::Array{Bool, 1},
+                    starredRow2Col::Array{Int, 1},
+                    starredCol2Row::Array{Int, 1},
+                    n::Int, m::Int) where G <: Real
     for jj in 1:m
         ##skip column if covered
         if colCover[jj]
@@ -80,8 +80,8 @@ function step2_col!{G <: Real}(costMatrix::Array{G, 2},
 
             ##check if adjusted cost is zero
             if zero_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
-            #if costMatrix[ii, jj] == rowOffsets[ii] + colOffsets[jj]::G
-            #if zero(G) == costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
+                #if costMatrix[ii, jj] == rowOffsets[ii] + colOffsets[jj]::G
+                #if zero(G) == costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
                 rowCover[ii] = true
                 colCover[jj] = true
                 starredRow2Col[ii] = jj::Int
@@ -103,10 +103,10 @@ function step2_col!{G <: Real}(costMatrix::Array{G, 2},
 end
 
 """
-    step3!(colCover, starredRow2Col, n, m) -> step 3
+        step3!(colCover, starredRow2Col, n, m) -> step 3
 
 
-"""
+    """
 function step3!(colCover::Array{Bool, 1},
                 starredRow2Col::Array{Int, 1},
                 n::Int, m::Int)
@@ -127,26 +127,27 @@ function step3!(colCover::Array{Bool, 1},
 end
 
 """
-    step4!(costMatrix, rowOffsets, colOffsets, rowCover, colCover,
-           starredRow2Col, starredCol2Row, primedRow2Col,
-           minval, minrow, mincol, n, m) -> step, minval, minrow, mincol
+        step4!(costMatrix, rowOffsets, colOffsets, rowCover, colCover,
+               starredRow2Col, starredCol2Row, primedRow2Col,
+               minval, minrow, mincol, n, m) -> step, minval, minrow, mincol
 
-Find 0's where cost[ii, jj] == rowOffsets[ii] + colOffsets[jj].  If
-cover row ii and column jj are false set them to true and star 0.
-When staring add to starredRow2Col and starredCol2Row
-"""
-function step4!{G <: Real}(costMatrix::Array{G, 2},
-                           rowOffsets::Array{G, 1},
-                           colOffsets::Array{G, 1},
-                           rowCover::Array{Bool, 1},
-                           colCover::Array{Bool, 1},
-                           starredRow2Col::Array{Int, 1},
-                           starredCol2Row::Array{Int, 1},
-                           primedRow2Col::Array{Int, 1},
-                           minval::G,
-                           minrow::Int,
-                           mincol::Int,
-                           n::Int, m::Int)
+    Find 0's where cost[ii, jj] == rowOffsets[ii] + colOffsets[jj].  If
+    cover row ii and column jj are false set them to true and star 0.
+    When staring add to starredRow2Col and starredCol2Row
+    """
+function step4!(costMatrix::Array{G, 2},
+                rowOffsets::Array{G, 1},
+                colOffsets::Array{G, 1},
+                rowCover::Array{Bool, 1},
+                colCover::Array{Bool, 1},
+                starredRow2Col::Array{Int, 1},
+                starredCol2Row::Array{Int, 1},
+                primedRow2Col::Array{Int, 1},
+                minval::G,
+                minrow::Int,
+                mincol::Int,
+                n::Int, m::Int) where G <: Real
+    
     ##add uncovered columns to Queue to make it easier to add additional columns later
     loopCols = Queue(Int)
     for jj in 1:m
@@ -196,7 +197,7 @@ function step4!{G <: Real}(costMatrix::Array{G, 2},
         println("Rows primed: ", count(primedRow2Col .!= 0))
         return 7, minval, minrow, mincol
     end
-        
+    
     for jj in find(.!colCover), ii in find(.!rowCover)
         if adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets) < minval
             minval = adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
@@ -272,25 +273,25 @@ function step4!{G <: Real}(costMatrix::Array{G, 2},
         #println("new value: $(costMatrix[minrow, mincol] - (rowOffsets[minrow] + colOffsets[mincol]))")
         #return 3, minval, minrow, mincol
     end
-    return 6, minval, minrow, mincol
+return 6, minval, minrow, mincol
 end
 
 """
-    step5!(rowCover, colCover, starredRow2Col, starredCol2Row,
-           primedRow2Col, minrow, mincol, n, m) -> 3
+        step5!(rowCover, colCover, starredRow2Col, starredCol2Row,
+               primedRow2Col, minrow, mincol, n, m) -> 3
 
-Find 0's where cost[ii, jj] == rowOffsets[ii] + colOffsets[jj].  If
-cover row ii and column jj are false set them to true and star 0.
-When staring add to starredRow2Col and starredCol2Row
-"""
+    Find 0's where cost[ii, jj] == rowOffsets[ii] + colOffsets[jj].  If
+    cover row ii and column jj are false set them to true and star 0.
+    When staring add to starredRow2Col and starredCol2Row
+    """
 function step5!(rowCover::Array{Bool, 1},
-                              colCover::Array{Bool, 1},
-                              starredRow2Col::Array{Int, 1},
-                              starredCol2Row::Array{Int, 1},
-                              primedRow2Col::Array{Int, 1},
-                              minrow::Int,
-                              mincol::Int,
-                              n::Int, m::Int)
+                colCover::Array{Bool, 1},
+                starredRow2Col::Array{Int, 1},
+                starredCol2Row::Array{Int, 1},
+                primedRow2Col::Array{Int, 1},
+                minrow::Int,
+                mincol::Int,
+                n::Int, m::Int)
 
     ##initialize array for tracking sequence, alternating primed and starred
     primedRows = Int[minrow]
@@ -334,15 +335,15 @@ function step5!(rowCover::Array{Bool, 1},
 end
 
 """
-    step6!(rowOffsets, colOffsets, rowCover, colCover, minval) -> 4
+        step6!(rowOffsets, colOffsets, rowCover, colCover, minval) -> 4
 
 
-"""
-function step6!{G <: Real}(rowOffsets::Array{G, 1},
-                           colOffsets::Array{G, 1},
-                           rowCover::Array{Bool, 1},
-                           colCover::Array{Bool, 1},
-                           minval::G)
+    """
+function step6!(rowOffsets::Array{G, 1},
+                colOffsets::Array{G, 1},
+                rowCover::Array{Bool, 1},
+                colCover::Array{Bool, 1},
+                minval::G) where G <: Real
     ##Add min to (subtract from offset) all elements in covered rows
     rowOffsets[rowCover] .-= minval::G
     #adjust = 0.5 * minval
@@ -356,9 +357,9 @@ function step6!{G <: Real}(rowOffsets::Array{G, 1},
     return 4
 end
 
-function zero_cost{G <: Real}(ii::Integer, jj::Integer, costMatrix::Array{G, 2},
-                              rowOffsets::Array{G, 1},
-                              colOffsets::Array{G, 1})
+function zero_cost(ii::Integer, jj::Integer, costMatrix::Array{G, 2},
+                   rowOffsets::Array{G, 1},
+                   colOffsets::Array{G, 1}) where G <: Real
     adjcost = adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
     if iszero(adjcost) || (abs(adjcost) < max(eps(rowOffsets[ii]), eps(colOffsets[jj])))
         return true
@@ -367,21 +368,21 @@ function zero_cost{G <: Real}(ii::Integer, jj::Integer, costMatrix::Array{G, 2},
     end
 end
 
-function adjusted_cost{G <: Real}(ii::Integer, jj::Integer,
-                                  costMatrix::Array{G, 2},
-                                  rowOffsets::Array{G, 1},
-                                  colOffsets::Array{G, 1})
+function adjusted_cost(ii::Integer, jj::Integer,
+                       costMatrix::Array{G, 2},
+                       rowOffsets::Array{G, 1},
+                       colOffsets::Array{G, 1}) where G <: Real
     return costMatrix[ii, jj] - (rowOffsets[ii] + colOffsets[jj])
 end
 
 """
-    compute_adjusted_cost(costMatrix, rowOffsets, colOffsets) -> adjustedCostMatrix
+        compute_adjusted_cost(costMatrix, rowOffsets, colOffsets) -> adjustedCostMatrix
 
-Compute the adjustedCostMatrix[ii, jj] = costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
-"""
-function adjusted_cost{G <: Real}(costMatrix::Array{G, 2},
-                                  rowOffsets::Array{G, 1},
-                                  colOffsets::Array{G, 1})
+    Compute the adjustedCostMatrix[ii, jj] = costMatrix[ii, jj] - rowOffsets[ii] - colOffsets[jj]
+    """
+function adjusted_cost(costMatrix::Array{G, 2},
+                       rowOffsets::Array{G, 1},
+                       colOffsets::Array{G, 1}) where G <: Real
     out = Array{G}(size(costMatrix))
     for jj in 1:length(colOffsets), ii in 1:length(rowOffsets)
         out[ii, jj] = costMatrix[ii, jj] - (rowOffsets[ii] + colOffsets[jj])
@@ -390,10 +391,10 @@ function adjusted_cost{G <: Real}(costMatrix::Array{G, 2},
 end
 
 """
-    lsap_solver(costMatrix) -> rowAssignments, rowOffsets, colOffsets
-"""
-function lsap_solver{G <: Real}(costMatrix::Array{G, 2};
-                                verbose::Bool = false)
+        lsap_solver(costMatrix) -> rowAssignments, rowOffsets, colOffsets
+    """
+function lsap_solver(costMatrix::Array{G, 2};
+                     verbose::Bool = false) where G <: Real
     if size(costMatrix, 1) > size(costMatrix, 2)
         
         #warn("more rows than columns, 0 assigments correspond to empty rows")
@@ -470,15 +471,15 @@ function lsap_solver{G <: Real}(costMatrix::Array{G, 2};
 end
 
 """
-    lsap_solver!(costMatrix, rowOffsets, colOffsets) -> rowAssignments, rowOffsets, colOffsets
-"""
-function lsap_solver!{G <: Real}(costMatrix::Array{G, 2},
-                                 rowOffsets::Array{G, 1},
-                                 colOffsets::Array{G, 1},
-                                 rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
-                                 check::Bool = true,
-                                 adjustRowOffsets::Bool = true,
-                                verbose::Bool = false)
+        lsap_solver!(costMatrix, rowOffsets, colOffsets) -> rowAssignments, rowOffsets, colOffsets
+    """
+function lsap_solver!(costMatrix::Array{G, 2},
+                      rowOffsets::Array{G, 1},
+                      colOffsets::Array{G, 1},
+                      rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
+                      check::Bool = true,
+                      adjustRowOffsets::Bool = true,
+                      verbose::Bool = false) where G <: Real
     if size(costMatrix, 1) > size(costMatrix, 2)
         
         warn("more rows than columns, 0 assigments correspond to empty rows")
@@ -586,13 +587,14 @@ function lsap_solver!{G <: Real}(costMatrix::Array{G, 2},
     return starredRow2Col, rowOffsets, colOffsets
 end
 
-function lsap_solver{G <: Real}(costMatrix::Array{G, 2},
-                                rowOffsets::Array{G, 1},
-                                colOffsets::Array{G, 1},
-                                rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
-                                check::Bool = true,
-                                adjustRowOffsets::Bool = true,
-                                verbose::Bool = false)
+function lsap_solver(costMatrix::Array{G, 2},
+                     rowOffsets::Array{G, 1},
+                     colOffsets::Array{G, 1},
+                     rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
+                     check::Bool = true,
+                     adjustRowOffsets::Bool = true,
+                     verbose::Bool = false) where G <: Real
+    
     return lsap_solver!(costMatrix, rowInitial, copy(rowOffsets), copy(colOffsets),
                         check = check,
                         adjustRowOffsets = adjustRowOffsets,

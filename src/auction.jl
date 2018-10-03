@@ -7,7 +7,7 @@
 """
 Find the index of the maximum adjusted reward in the row and the amount this exceeds the second largest value
 """
-function maxtwoRow{T <: AbstractFloat}(row::Integer, rewardMatrix::Array{T, 2}, colCosts::Array{T, 1}, ncol::Integer)
+function maxtwoRow(row::Integer, rewardMatrix::Array{T, 2}, colCosts::Array{T, 1}, ncol::Integer) where T <: AbstractFloat
     maxcol = 1
     maxval = rewardMatrix[row, 1] - colCosts[1]
     maxtwo = typemin(T)
@@ -28,7 +28,7 @@ function maxtwoRow{T <: AbstractFloat}(row::Integer, rewardMatrix::Array{T, 2}, 
 end
 
 #not complete
-function maxthreeRow{T <: AbstractFloat}(row::Integer, rewardMatrix::Array{T, 2}, colCosts::Array{T, 1}, ncol::Integer)
+function maxthreeRow(row::Integer, rewardMatrix::Array{T, 2}, colCosts::Array{T, 1}, ncol::Integer) where T <: AbstractFloat
     maxcol = 1
     maxval = rewardMatrix[row, 1] - colCosts[1]
     maxtwo = typemin(T)
@@ -49,7 +49,7 @@ function maxthreeRow{T <: AbstractFloat}(row::Integer, rewardMatrix::Array{T, 2}
     return maxcol, maxval, maxtwo
 end
 
-function maxtwoCol{G <: Integer, T <: AbstractFloat}(col::G, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, nrow::G)
+function maxtwoCol(col::G, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, nrow::G) where {G <: Integer, T <: AbstractFloat}
     maxrow = 1
     maxval = rewardMatrix[1, col] - rowCosts[1]
     maxtwo = typemin(T)
@@ -69,7 +69,7 @@ function maxtwoCol{G <: Integer, T <: AbstractFloat}(col::G, rewardMatrix::Array
     return maxrow, maxval, maxtwo
 end
 
-function maxtwoCol{G <: Integer, T <: AbstractFloat}(col::G, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1})
+function maxtwoCol(col::G, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}) where {G <: Integer, T <: AbstractFloat}
     rows = rowvals(rewardMatrix)
     rewards = nonzeros(rewardMatrix)
     rng = nzrange(rewardMatrix, col)
@@ -94,7 +94,7 @@ function maxtwoCol{G <: Integer, T <: AbstractFloat}(col::G, rewardMatrix::Spars
     return maxrow, maxval, maxtwo
 end
 
-function maxtwoCol_shadow{G <: Integer, T <: AbstractFloat}(col::G, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1})
+function maxtwoCol_shadow(col::G, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}) where {G <: Integer, T <: AbstractFloat}
     rows = rowvals(rewardMatrix)
     rewards = nonzeros(rewardMatrix)
     rng = nzrange(rewardMatrix, col)
@@ -123,7 +123,7 @@ end
 """
 forward iteration for a single un-assigned row in a symmetric auction assignment algorithm
 """
-function forward_iteration{G <: Integer, T <: AbstractFloat}(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ncol::G, ε::T)
+function forward_iteration(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ncol::G, ε::T) where {G <: Integer, T <: AbstractFloat}
     maxcol, maxval, maxtwo = maxtwoRow(row, rewardMatrix, colCosts, ncol)
     margin = maxval - maxtwo + ε
     colCosts[maxcol] += margin
@@ -143,7 +143,7 @@ end
 """
 forward iteration for a single un-assigned row in an asymmetric auction assignment algorithm
 """
-function forward_iteration{G <: Integer, T <: AbstractFloat}(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ncol::G, ncolbelowλ::G, ε::T, λ::T)
+function forward_iteration(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ncol::G, ncolbelowλ::G, ε::T, λ::T) where {G <: Integer, T <: AbstractFloat}
     maxcol, maxval, maxtwo = maxtwoRow(row, rewardMatrix, colCosts, ncol)
     margin = maxtwo - ε
     adj = rewardMatrix[row, maxcol] - margin
@@ -171,7 +171,7 @@ function forward_iteration{G <: Integer, T <: AbstractFloat}(row::G, r2c::Array{
     return r2c, c2r, rowCosts, colCosts, unassignedrow, ncolbelowλ
 end
 
-function forward_iteration{G <: Integer, T <: AbstractFloat}(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ncol::G, ncolbelowλ::G, ε::T, λ::T)
+function forward_iteration(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ncol::G, ncolbelowλ::G, ε::T, λ::T) where {G <: Integer, T <: AbstractFloat}
     maxcol, maxval, maxtwo = maxtwoCol(row, trewardMatrix, colCosts)
     margin = maxtwo - ε
     adj = trewardMatrix[maxcol, row] - margin #indicies switched intentionally as matrix is transposed
@@ -199,7 +199,7 @@ function forward_iteration{G <: Integer, T <: AbstractFloat}(row::G, r2c::Array{
     return r2c, c2r, rowCosts, colCosts, unassignedrow, ncolbelowλ
 end
 
-function forward_iteration_shadow{G <: Integer, T <: AbstractFloat}(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ncol::G, ncolbelowλ::G, nshadow::G, ε::T, λ::T)
+function forward_iteration_shadow(row::G, r2c::Array{G, 1}, c2r::Array{G, 1}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ncol::G, ncolbelowλ::G, nshadow::G, ε::T, λ::T) where {G <: Integer, T <: AbstractFloat}
     maxcol, maxval, maxtwo = maxtwoCol_shadow(row, trewardMatrix, colCosts)
     if iszero(maxcol) #|| (maxval < zero(T)) #try - λ instead of maxval < zero(T) adj < zero
         println("row: $row, margin: $margin, adj: $adj, maxval: $maxval, maxtwo: $maxtwo")
@@ -248,7 +248,7 @@ function forward_iteration_shadow{G <: Integer, T <: AbstractFloat}(row::G, r2c:
     return r2c, c2r, rowCosts, colCosts, shadowCosts, unassignedrow, ncolbelowλ, nshadow
 end
 
-function backward_iteration{G <: Integer, T <: AbstractFloat}(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ε::T)
+function backward_iteration(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ε::T) where {G <: Integer, T <: AbstractFloat}
     maxrow, maxval, maxtwo = maxtwoCol(col, rewardMatrix, rowCosts, nrow)
     margin = maxval - maxtwo + ε
     rowCosts[maxrow] += margin
@@ -266,7 +266,7 @@ function backward_iteration{G <: Integer, T <: AbstractFloat}(col::G, r2c::Array
     return r2c, c2r, rowCosts, colCosts, unassignedcol
 end
 
-function backward_iteration{G <: Integer, T <: AbstractFloat}(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ncolbelowλ::G, ε::T, λ::T)
+function backward_iteration(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ncolbelowλ::G, ε::T, λ::T) where {G <: Integer, T <: AbstractFloat}
     maxrow, maxval, maxtwo = maxtwoCol(col, rewardMatrix, rowCosts, nrow)
     margin = maxtwo - ε
     if maxval >= (λ + ε)
@@ -299,7 +299,7 @@ function backward_iteration{G <: Integer, T <: AbstractFloat}(col::G, r2c::Array
     return r2c, c2r, rowCosts, colCosts, unassignedcol, ncolbelowλ
 end
 
-function backward_iteration{G <: Integer, T <: AbstractFloat}(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ncolbelowλ::G, ε::T, λ::T)
+function backward_iteration(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ncolbelowλ::G, ε::T, λ::T) where {G <: Integer, T <: AbstractFloat}
     maxrow, maxval, maxtwo = maxtwoCol(col, rewardMatrix, rowCosts)
     margin = maxtwo - ε
     if maxval >= (λ + ε)
@@ -332,7 +332,7 @@ function backward_iteration{G <: Integer, T <: AbstractFloat}(col::G, r2c::Array
     return r2c, c2r, rowCosts, colCosts, unassignedcol, ncolbelowλ
 end
 
-function backward_iteration_shadow{G <: Integer, T <: AbstractFloat}(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ncolbelowλ::G, ε::T, λ::T)
+function backward_iteration_shadow(col::G, r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, nrow::G, ncolbelowλ::G, ε::T, λ::T) where {G <: Integer, T <: AbstractFloat}
     maxrow, maxval, maxtwo = maxtwoCol_shadow(col, rewardMatrix, rowCosts)
     if iszero(maxrow)
         unassignedcol = col
@@ -375,7 +375,7 @@ function backward_iteration_shadow{G <: Integer, T <: AbstractFloat}(col::G, r2c
     return r2c, c2r, rowCosts, colCosts, unassignedcol, ncolbelowλ
 end
 
-function check_costs!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer)
+function check_costs!(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer) where {G <: Integer, T <: AbstractFloat}
     for jj in 1:ncol, ii in 1:nrow
         if (rewardMatrix[ii, jj] - ε) > (rowCosts[ii] + colCosts[jj])
             colCosts[jj] = rewardMatrix[ii, jj] - ε - rowCosts[ii]
@@ -390,7 +390,7 @@ function check_costs!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::A
     return nothing
 end
 
-function check_costs!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer)
+function check_costs!(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer) where {G <: Integer, T <: AbstractFloat}
     rows = rowvals(rewardMatrix)
     rewards = nonzeros(rewardMatrix)
     for jj in 1:ncol
@@ -410,7 +410,7 @@ function check_costs!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::A
     return nothing
 end
 
-function check_assignments!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer)
+function check_assignments!(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer) where {G <: Integer, T <: AbstractFloat}
     nassigned = 0
     for ii in 1:nrow
         if !iszero(r2c[ii])
@@ -425,7 +425,7 @@ function check_assignments!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, 
     return nassigned
 end
 
-function check_assignments!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer)
+function check_assignments!(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer) where {G <: Integer, T <: AbstractFloat}
     nassigned = 0
     for ii in 1:nrow
         if !iszero(r2c[ii])
@@ -440,7 +440,7 @@ function check_assignments!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, 
     return nassigned
 end
 
-function check_assignments!{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer)
+function check_assignments!(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε::T, nrow::Integer, ncol::Integer) where {G <: Integer, T <: AbstractFloat}
     nassigned = 0
     for ii in 1:nrow
         if r2c[ii] == (ii + ncol) #remove cases assigned to shadow nodes as their status may have changed
@@ -463,7 +463,7 @@ end
 
 
 
-function symmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T; verbose::Bool = false, check::Bool = true)
+function symmetric_forward_backward(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T; verbose::Bool = false, check::Bool = true) where {G <: Integer, T <: AbstractFloat}
     if size(rewardMatrix, 1) != size(rewardMatrix, 2)
         error("reward matrix must have the same number of rows and columns")
     end
@@ -571,7 +571,7 @@ function symmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Array
     return r2c, c2r, rowCosts, colCosts
 end
 
-function asymmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, λ::T; verbose::Bool = false, check::Bool = true)
+function asymmetric_forward_backward(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, λ::T; verbose::Bool = false, check::Bool = true) where {G <: Integer, T <: AbstractFloat}
     nrow, ncol = size(rewardMatrix)
     nextracols = ncol - nrow
     nassigned = 0
@@ -705,7 +705,7 @@ function asymmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Arra
     return r2c, c2r, rowCosts, colCosts, λ
 end
 
-function asymmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, λ::T; verbose::Bool = false, check::Bool = true)
+function asymmetric_forward_backward(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε::T, λ::T; verbose::Bool = false, check::Bool = true) where {G <: Integer, T <: AbstractFloat}
     nrow, ncol = size(rewardMatrix)
     nextracols = ncol - nrow
     nassigned = 0
@@ -886,7 +886,7 @@ function asymmetric_forward_backward{G <: Integer, T <: AbstractFloat}(r2c::Arra
     return r2c, c2r, rowCosts, colCosts, λ
 end
 
-function asymmetric_forward_backward_shadow{G <: Integer, T <: AbstractFloat}(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε::T, λ::T; verbose::Bool = false, check::Bool = true)
+function asymmetric_forward_backward_shadow(r2c::Array{G, 1}, c2r::Array{G, 1}, rewardMatrix::SparseMatrixCSC{T, G}, trewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε::T, λ::T; verbose::Bool = false, check::Bool = true) where {G <: Integer, T <: AbstractFloat}
     nrow, ncol = size(rewardMatrix)
     nextracols = ncol - nrow
     nassigned = zero(G)
@@ -1046,7 +1046,7 @@ function asymmetric_forward_backward_shadow{G <: Integer, T <: AbstractFloat}(r2
     return r2c, c2r, rowCosts, colCosts, shadowCosts, λ
 end
 
-function symmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2; verbose::Bool = false, check::Bool = true)
+function symmetric_scaling_forward_backward(rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2; verbose::Bool = false, check::Bool = true) where T <: AbstractFloat
     r2c = zeros(Int, size(rewardMatrix, 1))
     c2r = zeros(Int, size(rewardMatrix, 2))
     
@@ -1082,14 +1082,14 @@ function symmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Ar
     return r2c, c2r, rowCosts, colCosts
 end
 
-function symmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2; verbose::Bool = false, check::Bool = false)
+function symmetric_scaling_forward_backward(rewardMatrix::Array{T, 2}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     #rowCosts = vec(minimum(rewardMatrix, 2))
     rowCosts = vec(maximum(rewardMatrix, 2))
     colCosts = zeros(T, size(rewardMatrix, 2))
     return symmetric_scaling_forward_backward(rewardMatrix, rowCosts, colCosts, ε0, εfinal, εscale, verbose = verbose, check = check)
 end
 
-function asymmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = true)
+function asymmetric_scaling_forward_backward(rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = true) where T <: AbstractFloat
     if size(rewardMatrix, 1) >= size(rewardMatrix, 2)
         error("number of rows must be less than number of columns")
     end
@@ -1131,14 +1131,14 @@ function asymmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::A
     return r2c, c2r, rowCosts, colCosts, λ
 end
 
-function asymmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function asymmetric_scaling_forward_backward(rewardMatrix::Array{T, 2}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     #rowCosts = vec(minimum(rewardMatrix, 2))
     rowCosts = vec(maximum(rewardMatrix, 2))
     colCosts = zeros(T, size(rewardMatrix, 2))
     return asymmetric_scaling_forward_backward(rewardMatrix, rowCosts, colCosts, ε0, εfinal, εscale, λ, verbose = verbose, check = check)
 end
 
-function asymmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = true)
+function asymmetric_scaling_forward_backward(rewardMatrix::SparseMatrixCSC{T}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = true) where T <: AbstractFloat
     if size(rewardMatrix, 1) >= size(rewardMatrix, 2)
         error("number of rows must be less than number of columns")
     end
@@ -1181,14 +1181,14 @@ function asymmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::S
     return r2c, c2r, rowCosts, colCosts, λ
 end
 
-function asymmetric_scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function asymmetric_scaling_forward_backward(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     #rowCosts = vec(minimum(rewardMatrix, 2))
     rowCosts = vec(maximum(rewardMatrix, 2))
     colCosts = zeros(T, size(rewardMatrix, 2))
     return asymmetric_scaling_forward_backward(rewardMatrix, rowCosts, colCosts, ε0, εfinal, εscale, λ, verbose = verbose, check = check)
 end
 
-function asymmetric_scaling_forward_backward_shadow{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = true)
+function asymmetric_scaling_forward_backward_shadow(rewardMatrix::SparseMatrixCSC{T}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = true) where T <: AbstractFloat
     #Implicitly the matrix is nrow by (ncol + nrow)
     #if size(rewardMatrix, 1) >= size(rewardMatrix, 2)
     #    error("number of rows must be less than number of columns")
@@ -1232,14 +1232,14 @@ function asymmetric_scaling_forward_backward_shadow{T <: AbstractFloat}(rewardMa
     return r2c, c2r, rowCosts, colCosts, shadowCosts, λ
 end
 
-function asymmetric_scaling_forward_backward_shadow{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function asymmetric_scaling_forward_backward_shadow(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     rowCosts = vec(maximum(rewardMatrix, 2))
     colCosts = zeros(T, size(rewardMatrix, 2))
     shadowCosts = zeros(T, size(rewardMatrix, 1))
     return asymmetric_scaling_forward_backward_shadow(rewardMatrix, rowCosts, colCosts, shadowCosts, ε0, εfinal, εscale, λ, verbose = verbose, check = check)
 end
 
-function scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function scaling_forward_backward(rewardMatrix::Array{T, 2}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     if size(rewardMatrix, 1) == size(rewardMatrix, 2)
         return symmetric_scaling_forward_backward(rewardMatrix, rowCosts, colCosts, ε0, εfinal, εscale, verbose = verbose, check = check)..., λ
     elseif size(rewardMatrix, 1) < size(rewardMatrix, 2)
@@ -1250,7 +1250,7 @@ function scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2},
     end
 end
 
-function scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function scaling_forward_backward(rewardMatrix::Array{T, 2}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     if size(rewardMatrix, 1) == size(rewardMatrix, 2)
         return symmetric_scaling_forward_backward(rewardMatrix, ε0, εfinal, εscale, verbose = verbose, check = check)..., λ
     elseif size(rewardMatrix, 1) < size(rewardMatrix, 2)
@@ -1261,7 +1261,7 @@ function scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::Array{T, 2},
     end
 end
 
-function scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function scaling_forward_backward(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     if size(rewardMatrix, 1) >= size(rewardMatrix, 2)
         error("assume fewer rows than columns")
     elseif size(rewardMatrix, 1) < size(rewardMatrix, 2)
@@ -1272,7 +1272,7 @@ function scaling_forward_backward{T <: AbstractFloat}(rewardMatrix::SparseMatrix
     end
 end
 
-function scaling_forward_backward_shadow{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function scaling_forward_backward_shadow(rewardMatrix::SparseMatrixCSC{T}, rowCosts::Array{T, 1}, colCosts::Array{T, 1}, shadowCosts::Array{T, 1}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     if size(rewardMatrix, 1) <= size(rewardMatrix, 2)
         return asymmetric_scaling_forward_backward_shadow(rewardMatrix, rowCosts, colCosts, shadowCosts, ε0, εfinal, εscale, λ, verbose = verbose, check = check)
     else
@@ -1281,7 +1281,7 @@ function scaling_forward_backward_shadow{T <: AbstractFloat}(rewardMatrix::Spars
     end
 end
 
-function scaling_forward_backward_shadow{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false)
+function scaling_forward_backward_shadow(rewardMatrix::SparseMatrixCSC{T}, ε0::T, εfinal::T = 1.0 / size(rewardMatrix, 1), εscale::T = 0.2, λ::T = 0.0; verbose::Bool = false, check::Bool = false) where T <: AbstractFloat
     if size(rewardMatrix, 1) <= size(rewardMatrix, 2)
         return asymmetric_scaling_forward_backward_shadow(rewardMatrix, ε0, εfinal, εscale, λ, verbose = verbose, check = check)
     else
@@ -1290,7 +1290,7 @@ function scaling_forward_backward_shadow{T <: AbstractFloat}(rewardMatrix::Spars
     end
 end
 
-function add_dummy_entries{T <: AbstractFloat}(rewardMatrix::SparseMatrixCSC{T})
+function add_dummy_entries(rewardMatrix::SparseMatrixCSC{T}) where T <: AbstractFloat
     nrow, ncol = size(rewardMatrix)
     rows, cols, vals = findnz(rewardMatrix)
     return sparse([rows; 1:nrow], [cols; range(ncol + 1, nrow)], [vals; fill(zero(T), nrow)], nrow, nrow + ncol)

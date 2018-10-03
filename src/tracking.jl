@@ -1,8 +1,8 @@
 #using DataStructures
 #http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html
 
-function lsap_solver_tracking{G <: Real}(costMatrix::Array{G, 2};
-                                         verbose::Bool = false)
+function lsap_solver_tracking(costMatrix::Array{G, 2};
+                                         verbose::Bool = false) where G <: Real
     
     ##Flip if more rows than columns
     if size(costMatrix, 1) > size(costMatrix, 2)
@@ -144,12 +144,12 @@ function lsap_solver_tracking{G <: Real}(costMatrix::Array{G, 2};
     return starredRow2Col, rowOffsets, colOffsets
 end
 
-function lsap_solver_tracking!{G <: Real}(costMatrix::Array{G, 2},
+function lsap_solver_tracking!(costMatrix::Array{G, 2},
                                           rowOffsets::Array{G, 1},
                                           colOffsets::Array{G, 1},
                                           rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
                                           check::Bool = true,
-                                          verbose::Bool = false)
+                                          verbose::Bool = false) where G <: Real
     
     ##Flip if more rows than columns
     if size(costMatrix, 1) > size(costMatrix, 2)
@@ -302,12 +302,13 @@ function lsap_solver_tracking!{G <: Real}(costMatrix::Array{G, 2},
     return starredRow2Col, rowOffsets, colOffsets
 end
 
-function lsap_solver_tracking{G <: Real}(costMatrix::Array{G, 2},
-                                         rowOffsets::Array{G, 1},
-                                         colOffsets::Array{G, 1},
-                                         rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
-                                         check::Bool = true,
-                                         verbose::Bool = false)
+function lsap_solver_tracking(costMatrix::Array{G, 2},
+                              rowOffsets::Array{G, 1},
+                              colOffsets::Array{G, 1},
+                              rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
+                              check::Bool = true,
+                              verbose::Bool = false) where G <: Real
+    
     return lsap_solver_tracking!(costMatrix, copy(rowOffsets), copy(colOffsets), rowInitial,
                                  check = check, verbose = verbose)
 end
@@ -355,18 +356,18 @@ Find 0's where cost[ii, jj] == rowOffsets[ii] + colOffsets[jj].  If
 cover row ii and column jj are false set them to true and star 0.
 When staring add to starredRow2Col and starredCol2Row
 """
-function step4_tracking!{G <: Real}(costMatrix::Array{G, 2},
-                           rowOffsets::Array{G, 1},
-                           colOffsets::Array{G, 1},
-                           rowCover::BitArray{1},
-                           colCover::BitArray{1},
-                           starredRow2Col::Array{Int, 1},
-                           starredCol2Row::Array{Int, 1},
-                           primedRow2Col::Array{Int, 1},
-                           zeroCol2Row::Dict{Int, Array{Int, 1}},
-                           minval::G,
-                           minPoints::Array{Tuple{Int, Int}, 1},
-                           n::Int, m::Int, colsUncovered::Array{Int, 1}, rowsUncovered::Array{Int, 1})
+function step4_tracking!(costMatrix::Array{G, 2},
+                         rowOffsets::Array{G, 1},
+                         colOffsets::Array{G, 1},
+                         rowCover::BitArray{1},
+                         colCover::BitArray{1},
+                         starredRow2Col::Array{Int, 1},
+                         starredCol2Row::Array{Int, 1},
+                         primedRow2Col::Array{Int, 1},
+                         zeroCol2Row::Dict{Int, Array{Int, 1}},
+                         minval::G,
+                         minPoints::Array{Tuple{Int, Int}, 1},
+                         n::Int, m::Int, colsUncovered::Array{Int, 1}, rowsUncovered::Array{Int, 1}) where G <: Real
 
     ##value defaults
     empty!(minPoints)
@@ -493,13 +494,13 @@ end
 
 
 """
-function step6_tracking!{G <: Real}(rowOffsets::Array{G, 1},
+function step6_tracking!(rowOffsets::Array{G, 1},
                            colOffsets::Array{G, 1},
                            rowCover::BitArray{1},
                            colCover::BitArray{1},
                            zeroCol2Row::Dict{Int, Array{Int, 1}},
                            minval::G,
-                           minPoints::Array{Tuple{Int, Int}, 1}, n::Int, m::Int)
+                           minPoints::Array{Tuple{Int, Int}, 1}, n::Int, m::Int) where G <: Real
     ##Add min to (subtract from offset) all elements in covered rows
     for ii in 1:n
         if rowCover[ii]

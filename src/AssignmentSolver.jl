@@ -1,6 +1,7 @@
 module AssignmentSolver
 
 using DataStructures: Queue, enqueue!, dequeue!
+using SparseArrays
 
 export lsap_solver, lsap_solver!, adjusted_cost
 #export step1!, step2!, step3!, step4!, step5!, step6!
