@@ -32,9 +32,9 @@ function lsap_solver_tracking(costMatrix::Array{G, 2};
     for jj in 1:m
         zeroCol2Row[jj] = Int[]
     end
-    minPoints = Array{Tuple{Int, Int}, 1}(0)
-    colsUncovered = Array{Int}(0)
-    rowsUncovered = Array{Int}(0)
+    minPoints = Array{Tuple{Int, Int}, 1}(undef, 0)
+    colsUncovered = Array{Int}(undef, 0)
+    rowsUncovered = Array{Int}(undef, 0)
     for ii in 1:n
         rowOffsets[ii] = costMatrix[ii, 1]
         starredRow2Col[ii] = 1
@@ -185,9 +185,9 @@ function lsap_solver_tracking!(costMatrix::Array{G, 2},
     for jj in 1:m
         zeroCol2Row[jj] = Int[]
     end
-    minPoints = Array{Tuple{Int, Int}, 1}(0)
-    colsUncovered = Array{Int}(0)
-    rowsUncovered = Array{Int}(0)
+    minPoints = Array{Tuple{Int, Int}, 1}(undef, 0)
+    colsUncovered = Array{Int}(undef, 0)
+    rowsUncovered = Array{Int}(undef, 0)
     
     ##Find row minimums
     for jj in 1:m, ii in 1:n
