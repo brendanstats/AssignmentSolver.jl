@@ -1,6 +1,37 @@
 #using DataStructures
-#http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html
 
+"""
+    lsap_solver_tracking(costMatrix::Array{G<:Real, 2}; verbose::Bool = false)
+
+### Arguments
+
+* `costMatrix` : `Float` or `Integer` valued cost matrix for which a maximal assignment is found
+* `verbose` : Optional `Bool` parameter controling if step and iteration should be reported
+
+### Details
+
+Based on Hungarian algorithm described by Bob Pilgrim at 
+http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html Returns maximal
+assignment for supplied cost Matrix.
+
+### Value
+
+    (starredRow2Col, rowOffsets, colOffsets)
+
+Where `starredRow2Col` contrains the column assignment for each row, note that if
+the number of rows in `costMatrix` is greater than the number of columns then some
+rows will not be assigned and `starredRow2Col` will contain zeros for unassigned
+rows.  `rowOffsets` and `colOffsets` are the dual variables corresponding to the
+solution found.  This version tracks the zeros in the adjusted cost matrix instead
+of re-computting them.  This reduces issue with numerical precision when a
+non-integer cost matrix is supplied.
+
+### Examples
+
+```julia
+
+```
+"""
 function lsap_solver_tracking(costMatrix::Array{G, 2};
                                          verbose::Bool = false) where G <: Real
     
@@ -108,12 +139,16 @@ function lsap_solver_tracking(costMatrix::Array{G, 2};
         if nstep == 3
             nstep = step3_tracking!(colCover, starredCol2Row, n, m, colsUncovered)
         elseif nstep == 4
-            nstep, minval, minPoints = step4_tracking!(costMatrix, rowOffsets, colOffsets,
-                                              rowCover, colCover,
-                                              starredRow2Col, starredCol2Row,
-                                              primedRow2Col,
-                                              zeroCol2Row,
-                                              minval, minPoints, n, m, colsUncovered, rowsUncovered)
+            nstep, minval, minPoints = step4_tracking!(costMatrix,
+                                                       rowOffsets, colOffsets,
+                                                       rowCover, colCover,
+                                                       starredRow2Col,
+                                                       starredCol2Row,
+                                                       primedRow2Col,
+                                                       zeroCol2Row,
+                                                       minval, minPoints,
+                                                       n, m,
+                                                       colsUncovered, rowsUncovered)
         elseif nstep == 5
             nstep = step5_tracking!(rowCover, colCover,
                            starredRow2Col, starredCol2Row,
@@ -144,12 +179,20 @@ function lsap_solver_tracking(costMatrix::Array{G, 2};
     return starredRow2Col, rowOffsets, colOffsets
 end
 
+"""
+    lsap_solver_tracking!(costMatrix::Array{G, 2},
+                          rowOffsets::Array{G, 1},
+                          colOffsets::Array{G, 1},
+                          rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
+                          check::Bool = true,
+                          verbose::Bool = false) where G <: Real
+"""
 function lsap_solver_tracking!(costMatrix::Array{G, 2},
-                                          rowOffsets::Array{G, 1},
-                                          colOffsets::Array{G, 1},
-                                          rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
-                                          check::Bool = true,
-                                          verbose::Bool = false) where G <: Real
+                               rowOffsets::Array{G, 1},
+                               colOffsets::Array{G, 1},
+                               rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
+                               check::Bool = true,
+                               verbose::Bool = false) where G <: Real
     
     ##Flip if more rows than columns
     if size(costMatrix, 1) > size(costMatrix, 2)
@@ -318,7 +361,9 @@ end
 """
     step3!(colCover, starredRow2Col, n, m) -> step 3
 
-
+Internal function for assignment solver, returns number of the next step in the
+algorithm.  Returns 7 (terminates algorithm) if the number of covered columns is
+equal to the number of rows, otherwise returns 4
 """
 function step3_tracking!(colCover::BitArray{1},
                 starredCol2Row::Array{Int, 1},
