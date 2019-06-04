@@ -901,8 +901,8 @@ end
 ########################################
 
 """
-    scaling_as!(astate::AssignmentState{G, T}, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
-    scaling_as!(astate::AssignmentState{G, T}, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltReward::T, dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+    scaling_as!(astate::AssignmentState{G, T}, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
+    scaling_as!(astate::AssignmentState{G, T}, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltReward::T, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
 Perform asymmetric scaling phase finding a feasible assignment (not necessarily optimal) for `rewardMatrix` and `epsi`.
 
@@ -926,7 +926,7 @@ See also: [`forward_iteration!`](@ref), [`auction_assignment_as`](@ref), [`aucti
 """
 function scaling_as!(astate::AssignmentState{G, T}, epsi::T,
                     rewardMatrix::A, frewardMatrix::A,
-                    dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                    dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
     ##Count initially assign rows and add others to Queue
     openRows = get_openrows(astate)
@@ -943,7 +943,7 @@ end
 #padded version
 function scaling_as!(astate::AssignmentState{G, T}, epsi::T,
                     rewardMatrix::A, frewardMatrix::A,
-                    dfltReward::T, dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                    dfltReward::T, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
     
     ##Count initially assign rows and add others to Queue
     openRows = get_openrows(astate)
@@ -958,7 +958,7 @@ function scaling_as!(astate::AssignmentState{G, T}, epsi::T,
 end
 
 """
-    auction_assignment_as(astate::AssignmentState{G, T}, rewardMatrix::A, frewardMatrix::A = forward_rewardmatrix(rewardMatrix); epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.2), dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat} -> (astate, lambda)
+    auction_assignment_as(astate::AssignmentState{G, T}, rewardMatrix::A, frewardMatrix::A = forward_rewardmatrix(rewardMatrix); epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.2), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> (astate, lambda)
 
 Return an approximately optimal assignment to maximize reward of assignment based on `rewardMatrix`.
 
@@ -982,11 +982,11 @@ sparse.  Ignored if the reward matrix is not sparse.
 
 See also: [`scaling_as!`](@ref), [`auction_assignment_padas`](@ref), [`auction_assignment_padas`](@ref), [`AssignmentState`](@ref)
 """
-function auction_assignment_as(rewardMatrix::A;
+function auction_assignment_as(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
-                               frewardMatrix::A = forward_rewardmatrix(rewardMatrix),
+                               frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
                                epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.2),
-                               dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                               dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
 
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = epsi0
@@ -1018,11 +1018,11 @@ function auction_assignment_as(rewardMatrix::A;
     return astate, lambda
 end
 
-function auction_assignment_padas(rewardMatrix::A;
+function auction_assignment_padas(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                   astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = true),
-                                  frewardMatrix::A = forward_rewardmatrix(rewardMatrix),
+                                  frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
                                   epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.2),
-                                  dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                  dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
 
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = epsi0
@@ -1059,8 +1059,8 @@ end
 ########################################
 
 """
-    scaling_asfr1!(astate::AssignmentState{G, T}, lambda::T, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
-    scaling_asfr1!(astate::AssignmentState{G, T}, lambda::T, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltReward::T, dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+    scaling_asfr1!(astate::AssignmentState{G, T}, lambda::T, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
+    scaling_asfr1!(astate::AssignmentState{G, T}, lambda::T, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltReward::T, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
 Perform asymmetric scaling phase finding a nearly optimal assignment for `rewardMatrix` and `epsi` for 'ASFR1' algorithm.
 
@@ -1086,7 +1086,7 @@ See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr1`](@ref), [`au
 function scaling_asfr1!(astate::AssignmentState{G, T},
                        lambda::T, epsi::T,
                        rewardMatrix::A, frewardMatrix::A,
-                       dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                       dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
 
     ##Count initially assign rows and add others to Queue
@@ -1139,7 +1139,7 @@ end
 function scaling_asfr1!(astate::AssignmentState{G, T},
                        lambda::T, epsi::T,
                        rewardMatrix::A, frewardMatrix::A,
-                       dfltReward::T, dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                       dfltReward::T, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
 
     ##Count initially assign rows and add others to Queue
@@ -1185,7 +1185,7 @@ function scaling_asfr1!(astate::AssignmentState{G, T},
 end
 
 """
-    auction_assignment_asfr1(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat} -> astate, lambda
+    auction_assignment_asfr1(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> astate, lambda
 
 Find approximately optimal (maximal) assignment for `rewardMatrix` and `epsitol` employing epsilon scaling.
 
@@ -1211,11 +1211,11 @@ sparse.  Ignored if the reward matrix is not sparse.
 
 See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr1`](@ref), [`auction_assignment_padasfr1`](@ref), [`AssignmentState`](@ref)
 """
-function auction_assignment_asfr1(rewardMatrix::A;
+function auction_assignment_asfr1(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                   astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
-                                  frewardMatrix::A = forward_rewardmatrix(rewardMatrix),
+                                  frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
                                   lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                  dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
     
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = copy(epsi0)
@@ -1243,7 +1243,7 @@ function auction_assignment_asfr1(rewardMatrix::A;
 end
 
 """
-    auction_assignment_asfr1(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat} -> astate, lambda
+    auction_assignment_asfr1(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> astate, lambda
 
 Find approximately optimal (maximal) assignment for `rewardMatrix` and `epsitol` employing epsilon scaling.
 
@@ -1271,11 +1271,11 @@ matrix is being used, passed to `reverse_bid`.
 
 See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr1`](@ref), [`auction_assignment_padasfr1`](@ref), [`AssignmentState`](@ref)
 """
-function auction_assignment_padasfr1(rewardMatrix::A;
+function auction_assignment_padasfr1(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                      astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = true),
-                                     frewardMatrix::A = forward_rewardmatrix(rewardMatrix),
+                                     frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
                                      lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                     dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                     dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
 
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = copy(epsi0)
@@ -1306,7 +1306,7 @@ end
 function auction_assignment_asfr1(rewardMatrix::A,
                                   frewardMatrix::A = forward_rewardmatrix(rewardMatrix);
                                   lambda0::T = -one(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                  dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
     rowPrices = vec(maximum(rewardMatrix, dims = 2))
     rowPrices, colPrices = dimmaximums(rewardMatrix)
     rowPrices .-= minimum(colPrices)
@@ -1344,7 +1344,7 @@ end
 function scaling_asfr2!(astate::AssignmentState{G, T},
                        lambda::T, epsi::T,
                        rewardMatrix::A, frewardMatrix::A,
-                       dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                       dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
     ##Count initially assign rows and add others to Queue
     openRows = get_openrows(astate)
@@ -1376,7 +1376,7 @@ end
 function scaling_asfr2!(astate::AssignmentState{G, T},
                        lambda::T, epsi::T,
                        rewardMatrix::A, frewardMatrix::A,
-                       dfltReward::T, dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                       dfltReward::T, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
     ##Count initially assign rows and add others to Queue
     openRows = get_openrows(astate)
@@ -1405,11 +1405,11 @@ function scaling_asfr2!(astate::AssignmentState{G, T},
     return astate, lambda
 end
 
-function auction_assignment_asfr2(rewardMatrix::A;
+function auction_assignment_asfr2(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                   astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
-                                  frewardMatrix::A = forward_rewardmatrix(rewardMatrix),
+                                  frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
                                   lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                  dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
 
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = copy(epsi0)
@@ -1423,24 +1423,17 @@ function auction_assignment_asfr2(rewardMatrix::A;
         if epsi < epsitol
             abovetol = false
         else
-            #newepsi = epsi * epsiscale
-            #deltaepsi = epsi - newepsi
-
-            #rowPrices are increased so that complimentary slackness is maintained with smaller epsilon
-            #astate.rowPrices .+= deltaepsi 
-            #astate = clear_assignment!(astate)
-            #epsi = newepsi
             astate, epsi = scale_assignment!(astate, epsi, epsiscale)
         end
     end
     return astate, lambda
 end
 
-function auction_assignment_padasfr2(rewardMatrix::A;
+function auction_assignment_padasfr2(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                      astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = true),
-                                     frewardMatrix::A = forward_rewardmatrix(rewardMatrix),
+                                     frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
                                      lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                     dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                     dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
     
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = copy(epsi0)
@@ -1454,13 +1447,6 @@ function auction_assignment_padasfr2(rewardMatrix::A;
         if epsi < epsitol
             abovetol = false
         else
-            #newepsi = epsi * epsiscale
-            #deltaepsi = epsi - newepsi
-
-            #rowPrices are increased so that complimentary slackness is maintained with smaller epsilon
-            #astate.rowPrices .+= deltaepsi 
-            #astate = clear_assignment!(astate)
-            #epsi = newepsi
             astate, epsi = scale_assignment!(astate, epsi, epsiscale)
         end
     end
@@ -1471,7 +1457,7 @@ end
 function auction_assignment_asfr2(rewardMatrix::A,
                                   frewardMatrix::A = forward_rewardmatrix(rewardMatrix);
                                   lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                  dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
     astate = AssignmentState(rewardMatrix)
     return auction_assignment_asfr2(astate, rewardMatrix, frewardMatrix, lambda0 = lambda0, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
 end
@@ -1480,7 +1466,7 @@ end
 function scaling_syfr!(astate::AssignmentState{G, T},
                        epsi::T,
                        rewardMatrix::A, frewardMatrix::A,
-                       dfltTwo::T) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                       dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
     ##Count initially assign rows and add others to Queue
     openRows = get_openrows(astate)
@@ -1511,11 +1497,11 @@ function scaling_syfr!(astate::AssignmentState{G, T},
     return astate
 end
 
-function auction_assignment_syfr(rewardMatrix::A;
+function auction_assignment_syfr(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                  astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
-                                 frewardMatrix::A = forward_rewardmatrix(rewardMatrix),
+                                 frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
                                  epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                 dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                 dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
 
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = copy(epsi0)
@@ -1528,13 +1514,6 @@ function auction_assignment_syfr(rewardMatrix::A;
         if epsi < epsitol
             abovetol = false
         else
-            #newepsi = epsi * epsiscale
-            #deltaepsi = epsi - newepsi
-
-            #rowPrices are increased so that complimentary slackness is maintained with smaller epsilon
-            #astate.rowPrices .+= deltaepsi 
-            #astate = clear_assignment!(astate)
-            #epsi = newepsi
             astate, epsi = scale_assignment!(astate, epsi, epsiscale)
         end
     end
@@ -1545,7 +1524,7 @@ end
 function auction_assignment_syfr(rewardMatrix::A,
                                  frewardMatrix::A = forward_rewardmatrix(rewardMatrix);
                                  epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}, G <: Integer, T <: AbstractFloat}
+                                  dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
     astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false)
     return auction_assignment_syfr(astate, rewardMatrix, frewardMatrix, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
 end

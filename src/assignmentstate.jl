@@ -60,7 +60,7 @@ function AssignmentState(rewardMatrix::Array{T, 2}; maximize = true, assign = tr
     return AssignmentState(r2c, c2r, rowPrices, colPrices, nassigned, nrow, ncol, ncol - nrow, nrow == ncol)
 end
 
-function AssignmentState(rewardMatrix::SparseMatrixCSC{T, G}; maximize = true, assign = true, pad = false, dfltReward::T = zero(T)) where T <: AbstractFloat
+function AssignmentState(rewardMatrix::SparseMatrixCSC{T, G}; maximize = true, assign = true, pad = false, dfltReward::T = zero(T)) where {G <: Integer, T <: AbstractFloat}
     nrow = G(size(rewardMatrix, 1))
     if pad
         ncol = nrow + G(size(rewardMatrix, 2))

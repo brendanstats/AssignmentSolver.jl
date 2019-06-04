@@ -351,7 +351,7 @@ function get_openrows(r2c::Array{G, 1}) where G <: Integer
     return nassigned, openRows
 end
 
-function get_openrows(astate::AssignmentState{G, T}) where G <: Integer
+function get_openrows(astate::AssignmentState{G, T}) where {G <: Integer, T <: AbstractFloat}
     openRows = Queue{G}()
     for ii in one(G):astate.nrow
         if iszero(astate.r2c[ii])
@@ -361,7 +361,7 @@ function get_openrows(astate::AssignmentState{G, T}) where G <: Integer
     return openRows
 end
 
-function get_opencols(astate::AssignmentState{G, T}) where G <: Integer
+function get_opencols(astate::AssignmentState{G, T}) where {G <: Integer, T <: AbstractFloat}
     openCols = Queue{G}()
     for jj in one(G):astate.ncol
         if iszero(astate.c2r[jj])
@@ -655,7 +655,7 @@ Shrink `epsi` by a factor of `epsiscale` for next iteration of auction assignmen
 
 `newepsi = epsi * epsiscale`.  All assigments are removed using `clear_assignment!` so that complimentary slackness is maintained which requires that `rowPrice[row] + colprice[col] >= rewardMatrix[row, col] - epsilon`
 """
-function scale_assignment!(astate::AssignmentState{G, T}, epsi::T, epsiscale::T)
+function scale_assignment!(astate::AssignmentState{G, T}, epsi::T, epsiscale::T) where {G <: Integer, T <: AbstractFloat}
     newepsi = epsi * epsiscale
     deltaepsi = epsi - newepsi
     for ii in one(G):astate.nrow

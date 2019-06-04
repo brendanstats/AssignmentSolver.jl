@@ -458,7 +458,7 @@ function step5_tracking!(rowCover::BitArray{1}, colCover::BitArray{1},
                          astate::AssignmentState{G, T},
                          primedRow2Col::Array{Int, 1},
                          minPoints::Array{Tuple{Int, Int}, 1},
-                         rowsUncovered::Array{Int, 1})
+                         rowsUncovered::Array{Int, 1}) where {G <: Integer, T <: Real} 
 
     ##initialize array for tracking sequence, alternating primed and starred
     primedRows = Int[minPoints[1][1]]
@@ -516,7 +516,7 @@ function step6_tracking!(astate::AssignmentState{G, T},
                          colCover::BitArray{1},
                          zeroCol2Row::Dict{Int, Array{Int, 1}},
                          minval::T,
-                         minPoints::Array{Tuple{Int, Int}, 1}) where T <: Real
+                         minPoints::Array{Tuple{Int, Int}, 1}) where {G <: Integer, T <: Real}
     ##Add min to (subtract from offset) all elements in covered rows
     for ii in 1:astate.nrow
         if rowCover[ii]
