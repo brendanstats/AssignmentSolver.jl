@@ -76,7 +76,7 @@ function maxtwoCol(col::G, rewardMatrix::SparseMatrixCSC{T, G}, rowCosts::Array{
     if length(rng) == 0
         error("problem not feasible")
     elseif length(rng) == 1
-        return rows[rng[1]], rewards[rng[1]], -1000.0
+        return rows[rng[1]], rewards[rng[1]] - rowCosts[rows[rng[1]]], -1000.0
     end
     maxrow = 0
     maxval = -1000.0

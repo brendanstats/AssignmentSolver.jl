@@ -521,7 +521,7 @@ function step5_tracking!(rowCover::BitArray{1}, colCover::BitArray{1},
     starredCol2Row[minPoints[1][2]] = minPoints[1][1]::Int
     
     ##Erase all primes
-    primedRow2Col[:] = 0::Int
+    primedRow2Col[:] .= 0::Int
     
     ##uncover every line in the matrix
     for ii in 1:n
