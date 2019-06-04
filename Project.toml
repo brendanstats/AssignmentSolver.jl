@@ -1,4 +1,4 @@
-ame = "AssignmentSolver"
+name = "AssignmentSolver"
 uuid = "8928493c-871c-11e9-09e1-0b378afb0546"
 authors = ["Brendan McVeigh <mcveigh.brendan@gmail.com>"]
 version = "0.1.0"
