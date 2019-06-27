@@ -263,7 +263,7 @@ total number of assignments has increased.
 * `bid::T`: New price for `maxcol`.
 * `newRowPrice::T`: New price for `row`.
 * `openRows::Queue{G}`: Queue containing unassigned rows.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 
 See also: [`forward_update_nbelow!`](@ref), [`forward_bid`](@ref), [`reverse_update!`](@ref), [`forward_iteration!`](@ref), [`AssignmentState`](@ref)
@@ -348,7 +348,7 @@ is already assigned then the previous assignment is removed. `addassign::Bool` i
 * `newRowPrice::T`: New price for `row`.
 * `nbelow::G`: number of column prices (`astate.colPrices`) strictly less than `lambda`.
 * `openRows::Queue{G}`: Queue containing unassigned rows.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 
 See also: [`forward_update!`](@ref), [`forward_bid`](@ref), [`reverse_update!`](@ref), [`forward_iteration!`](@ref), [`AssignmentState`](@ref)
@@ -414,7 +414,7 @@ is already assigned then the previous assignment is removed.  `addassign::Bool` 
 * `newColPrice::T`: New price for `col`.
 * `openCols::Queue{G}`: Queue containing unassigned columns.
 * `openColsAbove::Queue{G}`: Queue containing unassigned columns where `astate.colPrices` > `lambda`.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 
 See also: [`reverse_update_nbelow!`](@ref), [`reverse_bid`](@ref), [`forward_update!`](@ref), [`reverse_iteration!`](@ref), [`AssignmentState`](@ref)
@@ -503,7 +503,7 @@ is already assigned then the previous assignment is removed.  `addassign::Bool` 
 * `nbelow::G`: number of column prices (`astate.colPrices`) < `lambda`.
 * `openCols::Queue{G}`: Queue containing unassigned columns.
 * `openColsAbove::Queue{G}`: Queue containing unassigned columns where `astate.colPrices` > `lambda`.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 
 See also: [`reverse_update!`](@ref), [`reverse_bid`](@ref), [`forward_update!`](@ref), [`reverse_iteration!`](@ref), [`AssignmentState`](@ref)
@@ -566,7 +566,7 @@ then a `dfltReward` must be supplied. `addassign::Bool` indicates if the
 # Arguments
 
 * `openRows::Queue{G}`: Queue containing unassigned rows.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 * `epsi::T`: tolerance associated with auction algorithm iteration.
 * `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
@@ -653,7 +653,7 @@ then a `dfltReward` must be supplied.  `addassign::Bool` indicates if the
 
 * `nbelow::G`: number of column prices (`astate.colPrices`) < `lambda`.
 * `openRows::Queue{G}`: Queue containing unassigned rows.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 * `epsi::T`: tolerance associated with auction algorithm iteration.
 * `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
@@ -725,7 +725,7 @@ then a `dfltReward` must be supplied. `addassign::Bool` indicates if the
 
 * `openCols::Queue{G}`: Queue containing unassigned columns.
 * `openColsAbove::Queue{G}`: Queue containing unassigned columns where `astate.colPrices` > `lambda`.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 * `epsi::T`: tolerance associated with auction algorithm iteration.
 * `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
@@ -832,7 +832,7 @@ then a `dfltReward` must be supplied. `addassign::Bool` indicates if the
 * `nbelow::G`: number of column prices (`astate.colPrices`) < `lambda`.
 * `openCols::Queue{G}`: Queue containing unassigned columns.
 * `openColsAbove::Queue{G}`: Queue containing unassigned columns where `astate.colPrices` > `lambda`.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 * `epsi::T`: tolerance associated with auction algorithm iteration.
 * `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
@@ -911,7 +911,7 @@ entries have been added so `rewardMatrix[row, row + size(rewardMatrix, 2)] = dfl
 
 # Arguments
 
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `epsi::T`: tolerance associated with auction algorithm iteration.
 * `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
 * `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
@@ -970,7 +970,7 @@ a feasible solution is also assumed to exist.  If this is not certain it is reco
 # Arguments
 
 * `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
 reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
 the reward matrix.
@@ -980,7 +980,7 @@ the reward matrix.
 * `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
 sparse.  Ignored if the reward matrix is not sparse.
 
-See also: [`scaling_as!`](@ref), [`auction_assignment_padas`](@ref), [`auction_assignment_padas`](@ref), [`AssignmentState`](@ref)
+See also: [`scaling_as!`](@ref), [`auction_assignment_padas`](@ref), [`auction_assignment`](@ref), [`AssignmentState`](@ref)
 """
 function auction_assignment_as(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
@@ -1003,7 +1003,7 @@ function auction_assignment_as(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 
     end
     
     ##Set lambda to minimum assigned prices
-    if astate.nexcesscols > zero(G)
+    if astate.nexcesscols > zero(Int)
         lambda = min_assigned_colprice(astate)
     else
         lambda = zero(T)
@@ -1018,6 +1018,31 @@ function auction_assignment_as(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 
     return astate, lambda
 end
 
+"""
+    auction_assignment_padas(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}}; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = true), frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.2), dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {T <: AbstractFloat} -> (astate, lambda)
+
+Return an approximately optimal assignment to maximize reward of assignment based on `rewardMatrix`.
+
+Implementation of the 'AS' auction algorithm for asymmetric assignment problems (Bertsekas 1992).
+`astate.nrow` additional columns are implicitly added to `rewardMatrix` with entries on at (row, ncol + row)
+with reward values of `dfltReward`.  This ensures that a feasbile solution exists.
+
+# Arguments
+
+* `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
+* `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
+reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
+the reward matrix.
+* `epsi0::T`: Starting tolerance associated with auction algorithm iteration.
+* `epsitol::T`: Final tolerance, result with be within `size(rewardMatrix, 1) * epsitol` of optimal.
+* `epsiscale::T`: Scaling rate of `epsi` at each interation `epsinew = epsi * epsiscale`.
+* `dfltReward::T`: Default reward value used for implicity added entries.
+* `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
+sparse.  Ignored if the reward matrix is not sparse.
+
+See also: [`scaling_as!`](@ref), [`auction_assignment_as`](@ref), [`auction_assignment`](@ref), [`AssignmentState`](@ref)
+"""
 function auction_assignment_padas(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                   astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = true),
                                   frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
@@ -1039,7 +1064,7 @@ function auction_assignment_padas(rewardMatrix::Union{SparseMatrixCSC{T}, Array{
     end
     
     ##Set lambda to minimum assigned prices
-    if astate.nexcesscols > zero(G)
+    if astate.nexcesscols > zero(Int)
         lambda = min_assigned_colprice(astate)
     else
         lambda = zero(T)
@@ -1069,7 +1094,7 @@ entries have been added so `rewardMatrix[row, row + size(rewardMatrix, 2)] = dfl
 
 # Arguments
 
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
 * `epsi::T`: tolerance associated with auction algorithm iteration.
 * `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
@@ -1197,7 +1222,7 @@ a feasible solution is also assumed to exist.  If this is not certain it is reco
 # Arguments
 
 * `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
 reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
 the reward matrix.
@@ -1209,7 +1234,7 @@ the reward matrix.
 * `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
 sparse.  Ignored if the reward matrix is not sparse.
 
-See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr1`](@ref), [`auction_assignment_padasfr1`](@ref), [`AssignmentState`](@ref)
+See also: [`forward_iteration!`](@ref), [`auction_assignment`](@ref), [`auction_assignment_padasfr1`](@ref), [`AssignmentState`](@ref)
 """
 function auction_assignment_asfr1(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                   astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
@@ -1229,13 +1254,6 @@ function auction_assignment_asfr1(rewardMatrix::Union{SparseMatrixCSC{T}, Array{
         if epsi < epsitol
             abovetol = false
         else
-            #newepsi = epsi * epsiscale
-            #deltaepsi = epsi - newepsi
-
-            #rowPrices are increased so that complimentary slackness is maintained with smaller epsilon
-            #astate.rowPrices .+= deltaepsi
-            #astate = clear_assignment!(astate)
-            #epsi = newepsi
             astate, epsi = scale_assignment!(astate, epsi, epsiscale)
         end
     end
@@ -1243,19 +1261,18 @@ function auction_assignment_asfr1(rewardMatrix::Union{SparseMatrixCSC{T}, Array{
 end
 
 """
-    auction_assignment_asfr1(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> astate, lambda
+    auction_assignment_padasfr1(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> astate, lambda
 
 Find approximately optimal (maximal) assignment for `rewardMatrix` and `epsitol` employing epsilon scaling.
 
 Implementation of the 'ASFR1' auction algorithm for asymmetric assignment problems (Bertsekas 1992).
-Asymmetry assumes that `size(rewardMatrix, 1) <= size(rewardMatrix, 2)`.  For sparse problems
-a feasible solution is also assumed to exist.  If this is not certain it is recommended that
-`auction_assignment_padasfr1` be used as this will guarantee a feasible solution exists.
+`astate.nrow` additional columns are implicitly added to `rewardMatrix` with entries on at (row, ncol + row)
+with reward values of `dfltReward`.  This ensures that a feasbile solution exists.
 
 # Arguments
 
 * `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
-* `astate::AssignmentState{G, T}` State of assignment solution.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
 * `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
 reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
 the reward matrix.
@@ -1269,7 +1286,7 @@ sparse.  Ignored if the reward matrix is not sparse.
 * `dfltReward::T`: Default reward value used for implicity added entries if a padded reward
 matrix is being used, passed to `reverse_bid`.
 
-See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr1`](@ref), [`auction_assignment_padasfr1`](@ref), [`AssignmentState`](@ref)
+See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr1`](@ref), [`auction_assignment`](@ref), [`AssignmentState`](@ref)
 """
 function auction_assignment_padasfr1(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                      astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = true),
@@ -1289,62 +1306,42 @@ function auction_assignment_padasfr1(rewardMatrix::Union{SparseMatrixCSC{T}, Arr
         if epsi < epsitol
             abovetol = false
         else
-            #newepsi = epsi * epsiscale
-            #deltaepsi = epsi - newepsi
-
-            #rowPrices are increased so that complimentary slackness is maintained with smaller epsilon
-            #astate.rowPrices .+= deltaepsi
-            #astate = clear_assignment!(astate)
-            #epsi = newepsi
             astate, epsi = scale_assignment!(astate, epsi, epsiscale)
         end
     end
     return astate, lambda
 end
 
-#=
-function auction_assignment_asfr1(rewardMatrix::A,
-                                  frewardMatrix::A = forward_rewardmatrix(rewardMatrix);
-                                  lambda0::T = -one(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
-    rowPrices = vec(maximum(rewardMatrix, dims = 2))
-    rowPrices, colPrices = dimmaximums(rewardMatrix)
-    rowPrices .-= minimum(colPrices)
-    astate = AssignmentState(rowPrices, colPrices)
-    
-    if (lambda0 < zero(T)) && (astate.nexcesscols > zero(G))
-        lambda0 = sort(colPrices)[astate.ncol - astate.nrow]
-    end
-    return auction_assignment_asfr1(astate, rewardMatrix, lambda0 = lambda0, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
-end
-=#
+########################################
+#ASFR2 - lambda only adjusted between scaling phase
+########################################
 
-#=
-function auction_assignment_asfr1(rewardMatrix::SparseMatrixCSC{T, G},
-                                  trewardMatrix::SparseMatrixCSC{T, G} = permutedims(rewardMatrix, [2, 1]);
-                                  lambda0::T = -one(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat}
-    rowPrices, colPrices = dimmaximums(rewardMatrix)
-    rowPrices .-= minimum(colPrices)
-    astate = AssignmentState(rowPrices, colPrices)
-    
-    if (lambda0 < zero(T)) && (astate.ncol - astate.nrow) > zero(G)
-        lambda0 = sort(colPrices)[astate.ncol - astate.nrow]
-    end
-    return auction_assignment_asfr1(astate, rewardMatrix, trewardMatrix, lambda0 = lambda0, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
-end
-=#
-#Forward Reverse Algorithm, fixed lambda
-#Purely Reverse Algorithm
-#    1) Forward Algorithm until assignment is feasible (everything assigned)
-#    2) Set lambda to min assigned object prices
-#    3) Run reverse algorithm until termination
-# *Track unassigned rows and columns
+"""
+    scaling_asfr2!(astate::AssignmentState{G, T}, lambda::T, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
+    scaling_asfr2!(astate::AssignmentState{G, T}, lambda::T, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltReward::T, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
-function scaling_asfr2!(astate::AssignmentState{G, T},
-                       lambda::T, epsi::T,
-                       rewardMatrix::A, frewardMatrix::A,
-                       dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
+Perform asymmetric scaling phase finding a nearly optimal assignment for `rewardMatrix` and `epsi` for 'ASFR2' algorithm.
+
+If a `dfltReward` parameter is passed then `astate` is assumed to be 'padded' so that dummy
+entries have been added so `rewardMatrix[row, row + size(rewardMatrix, 2)] = dfltReward`.
+
+# Arguments
+
+* `astate::AssignmentState{G, T}`: State of assignment solution.
+* `lambda::T`: profitability threshold parameter for asymmetric auction algorithm.
+* `epsi::T`: tolerance associated with auction algorithm iteration.
+* `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
+* `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
+reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
+the reward matrix.
+* `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
+sparse.  Ignored if the reward matrix is not sparse.
+* `dfltReward::T`: Default reward value used for implicity added entries if a padded reward
+matrix is being used, passed to `reverse_bid`.
+
+See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr2`](@ref), [`auction_assignment_padasfr2`](@ref), [`AssignmentState`](@ref)
+"""
+function scaling_asfr2!(astate::AssignmentState{G, T}, lambda::T, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
     ##Count initially assign rows and add others to Queue
     openRows = get_openrows(astate)
@@ -1405,6 +1402,33 @@ function scaling_asfr2!(astate::AssignmentState{G, T},
     return astate, lambda
 end
 
+"""
+    auction_assignment_asfr2(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> astate, lambda
+
+Find approximately optimal (maximal) assignment for `rewardMatrix` and `epsitol` employing epsilon scaling.
+
+Implementation of the 'ASFR2' auction algorithm for asymmetric assignment problems (Bertsekas 1992).
+Asymmetry assumes that `size(rewardMatrix, 1) <= size(rewardMatrix, 2)`.  For sparse problems
+a feasible solution is also assumed to exist.  If this is not certain it is recommended that
+`auction_assignment_padasfr2` be used as this will guarantee a feasible solution exists.
+
+# Arguments
+
+* `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
+* `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
+reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
+the reward matrix.
+* `lambda0::T`: Initial value of the profitability threshold parameter for asymmetric auction algorithm.
+* `epsi0::T`: Starting tolerance associated with auction algorithm iteration.
+* `epsitol::T`: Final tolerance, result with be within `size(rewardMatrix, 1) * epsitol` of optimal.
+* `epsiscale::T`: Scaling rate of `epsi` at each interation `epsinew = epsi * epsiscale`.
+
+* `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
+sparse.  Ignored if the reward matrix is not sparse.
+
+See also: [`forward_iteration!`](@ref), [`auction_assignment`](@ref), [`auction_assignment_padasfr2`](@ref), [`AssignmentState`](@ref)
+"""
 function auction_assignment_asfr2(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                   astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
                                   frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
@@ -1429,6 +1453,34 @@ function auction_assignment_asfr2(rewardMatrix::Union{SparseMatrixCSC{T}, Array{
     return astate, lambda
 end
 
+"""
+    auction_assignment_padasfr2(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> astate, lambda
+
+Find approximately optimal (maximal) assignment for `rewardMatrix` and `epsitol` employing epsilon scaling.
+
+Implementation of the 'ASFR2' auction algorithm for asymmetric assignment problems (Bertsekas 1992).
+`astate.nrow` additional columns are implicitly added to `rewardMatrix` with entries on at (row, ncol + row)
+with reward values of `dfltReward`.  This ensures that a feasbile solution exists.
+
+# Arguments
+
+* `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
+* `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
+reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
+the reward matrix.
+* `lambda0::T`: Initial value of the profitability threshold parameter for asymmetric auction algorithm.
+* `epsi0::T`: Starting tolerance associated with auction algorithm iteration.
+* `epsitol::T`: Final tolerance, result with be within `size(rewardMatrix, 1) * epsitol` of optimal.
+* `epsiscale::T`: Scaling rate of `epsi` at each interation `epsinew = epsi * epsiscale`.
+
+* `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
+sparse.  Ignored if the reward matrix is not sparse.
+* `dfltReward::T`: Default reward value used for implicity added entries if a padded reward
+matrix is being used.
+
+See also: [`forward_iteration!`](@ref), [`auction_assignment_asfr2`](@ref), [`auction_assignment`](@ref), [`AssignmentState`](@ref)
+"""
 function auction_assignment_padasfr2(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
                                      astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = true),
                                      frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
@@ -1453,20 +1505,29 @@ function auction_assignment_padasfr2(rewardMatrix::Union{SparseMatrixCSC{T}, Arr
     return astate, lambda
 end
 
-#=
-function auction_assignment_asfr2(rewardMatrix::A,
-                                  frewardMatrix::A = forward_rewardmatrix(rewardMatrix);
-                                  lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
-    astate = AssignmentState(rewardMatrix)
-    return auction_assignment_asfr2(astate, rewardMatrix, frewardMatrix, lambda0 = lambda0, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
-end
-=#
+#########################################
+#Symmetric Solver
+#########################################
 
-function scaling_syfr!(astate::AssignmentState{G, T},
-                       epsi::T,
-                       rewardMatrix::A, frewardMatrix::A,
-                       dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
+"""
+    scaling_syfr!(astate::AssignmentState{G, T}, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
+
+Perform symmetric scaling phase finding a nearly optimal assignment for `rewardMatrix` and `epsi` alternating forward updates and reverse updates.
+
+# Arguments
+
+* `astate::AssignmentState{G, T}`: State of assignment solution.
+* `epsi::T`: tolerance associated with auction algorithm iteration.
+* `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
+* `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
+reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
+the reward matrix.
+* `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
+sparse.  Ignored if the reward matrix is not sparse.
+
+See also: [`forward_iteration!`](@ref), [`auction_assignment_syfr`](@ref), [`AssignmentState`](@ref)
+"""
+function scaling_syfr!(astate::AssignmentState{G, T}, epsi::T, rewardMatrix::A, frewardMatrix::A, dfltTwo::T) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
 
     ##Count initially assign rows and add others to Queue
     openRows = get_openrows(astate)
@@ -1497,11 +1558,33 @@ function scaling_syfr!(astate::AssignmentState{G, T},
     return astate
 end
 
-function auction_assignment_syfr(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}};
-                                 astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
+"""
+    auction_assignment_asfr2(rewardMatrix::A; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false), frewardMatrix::A = forward_rewardmatrix(rewardMatrix), lambda0::T = zero(T), epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}} -> astate, lambda
+
+Find approximately optimal (maximal) assignment for `rewardMatrix` and `epsitol` employing epsilon scaling.
+
+Implementation of a forward/reverse auction algorithm for symmetric assignment problems (Bertsekas 1992).
+Symmetry assumes that `size(rewardMatrix, 1) == size(rewardMatrix, 2)`.  For sparse problems
+a feasible solution is also assumed to exist.
+
+# Arguments
+
+* `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
+* `frewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: forward reward matrix.  If the
+reward matrix is space then this is the transpose of the reward matrix.  Otherwise it is just
+the reward matrix.
+* `epsi0::T`: Starting tolerance associated with auction algorithm iteration.
+* `epsitol::T`: Final tolerance, result with be within `size(rewardMatrix, 1) * epsitol` of optimal.
+* `epsiscale::T`: Scaling rate of `epsi` at each interation `epsinew = epsi * epsiscale`.
+* `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
+sparse.  Ignored if the reward matrix is not sparse.
+
+See also: [`forward_iteration!`](@ref), [`auction_assignment`](@ref), [`AssignmentState`](@ref)
+"""
+function auction_assignment_syfr(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}}; astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false),
                                  frewardMatrix::Union{SparseMatrixCSC{T}, Array{T, 2}} = forward_rewardmatrix(rewardMatrix),
-                                 epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                 dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
+                                 epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1), dfltTwo::T = -T(Inf)) where {T <: AbstractFloat}
 
     check_epsilons(epsi0, epsitol, epsiscale)
     epsi = copy(epsi0)
@@ -1520,52 +1603,115 @@ function auction_assignment_syfr(rewardMatrix::Union{SparseMatrixCSC{T}, Array{T
     return astate, zero(T)
 end
 
-#=
-function auction_assignment_syfr(rewardMatrix::A,
-                                 frewardMatrix::A = forward_rewardmatrix(rewardMatrix);
-                                 epsi0::T = one(T), epsitol::T = T(one(T) / size(rewardMatrix, 1)), epsiscale::T = T(0.1),
-                                  dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat, A <: Union{SparseMatrixCSC{T, G}, Array{T, 2}}}
-    astate = AssignmentState(rewardMatrix, maximize = true, assign = true, pad = false)
-    return auction_assignment_syfr(astate, rewardMatrix, frewardMatrix, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
-end
-=#
+"""
+   auction_assignment(rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}; algorithm::String = "", pad::Bool = false, maximize::Bool = true, assign::Bool = true, epsi0::T = zero(T), epsitol::T = zero(T), epsiscale::T = zero(T), dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where T <: AbstractFloat
 
-function auction_assignment(rewardMatrix::Array{T, 2}; algorithm = "") where T <: AbstractFloat
-    if size(rewardMatrix, 1) > size(rewardMatrix, 2)
-        @warn "more columns than rows, some rows will be unassigned"
-        astate, lambda = auction_assignment(permutedims(rewardMatrix, [2, 1]), algorithm = algorithm)
+Wrapper around several differnent auction assignment algorithms for symmetric and asymmetric assignment problems. Returns and `AssignmentState` and a `lambda` value
+
+`algorithm` should be one of 'as', 'asfr1', 'asfr2', or `syfr` where `syfr` is for symmetric assignment problems.
+If left blank a default value of `asfr2` will be used for asymmetric or padded (`pad = true`) problems, otherwise
+`syfr` will be used.  If `maximize` is set to false then `reward2cost` us used to convert the supplied cost matrix
+into a reward matrix.  If `pad = true` then `auction_assignment_padas`, `auction_assignment_padasfr1`, or
+`auction_assignment_padasfr2` will be called, otherwise the standard functions `auction_assignment_as`, `auction_assignment_asfr1`,
+and `auction_assignment_asfr2 are used.  Additionally, `maximize`, `pad`, and `assign` are passed the `AssignmentState`
+and used for initializing.  `epsiscale` defualts to 0.1 unless `algorithm == "as"` in which case it defaults to 0.2.
+`epsi0` defaults to `maximum(rewardMatrix) * epsiscale` and `epsitol` defaults to `1.0 / size(rewardMatrix, 1)`.  The
+default value of `epsitol` will guarantee that an optimal solution is found for integer costs but a smaller value
+may be needed if many values of `rewardMatrix` are similar.  
+
+# Arguments
+
+* `rewardMatrix::Union{SparseMatrixCSC{T, G}, Array{T, 2}}`: reward matrix.
+* `algorithm::String`: Auction algorithm used.
+* `pad::Bool`: Should rewardMatrix have extra columns implicity added.
+* `maximize::Bool`: Should a maximumal (or minimal) assignment be found
+* `assign::Bool`: Should heuistics be used when initializing assignment
+* `epsi0::T`: Starting tolerance associated with auction algorithm iteration.
+* `epsitol::T`: Final tolerance, result with be within `size(rewardMatrix, 1) * epsitol` of optimal.
+* `epsiscale::T`: Scaling rate of `epsi` at each interation `epsinew = epsi * epsiscale`.
+* `dfltReward::T`: Default reward value used for implicity added entries if a padded reward
+matrix is being used.
+* `dfltTwo::T`: default second largest value passed to `reverse_bid` if the rewardMatrix is
+sparse.  Ignored if the reward matrix is not sparse.
+
+See also:
+"""
+function auction_assignment(rewardMatrix::Array{T, 2}; algorithm::String = "", pad::Bool = false, maximize::Bool = true, assign::Bool = true,
+                            epsi0::T = zero(T), epsitol::T = zero(T), epsiscale::T = zero(T),
+                            dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where T <: AbstractFloat
+    if !maximize
+        @info "Converting cost matrix to reward max"
+        if pad
+            @warn "`dflReward` in padding passed as is (not converted from cost)"
+        end
+        return auction_algorithm(reward2cost(rewardMatrix), algorithm = algorithm, pad = pad, maximize = true, assign = assign, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
+    elseif !pad && size(rewardMatrix, 1) > size(rewardMatrix, 2)
+        @info "more columns than rows, some rows will be unassigned"
+        astate, lambda = auction_assignment(permutedims(rewardMatrix), algorithm = algorithm, pad = pad)
         return flip(astate), lambda
     else
+        astate = AssignmentState(rewardMatrix, maximize = true, assign = assign, pad = pad, dfltReward = dfltReward)
+
+        #set algorithm        
         if algorithm == ""
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                @warn "No algorithm specified for symmetric rewardMatrix, setting algorithm = 'syfr'"
-                astate, lambda = auction_assignment_syfr(rewardMatrix)
+            if !pad && size(rewardMatrix, 1) == size(rewardMatrix, 2)
+                @info "No algorithm specified for symmetric rewardMatrix, setting algorithm = 'syfr'"
+                algorithm = "syfr"
             else
-                @warn "No algorithm specified for asymmetric rewardMatrix, setting algorithm = 'asfr2'"
-                astate, lambda = auction_assignment_asfr2(rewardMatrix)
+                @info "No algorithm specified for asymmetric rewardMatrix, setting algorithm = 'asfr2'"
+                algorithm = "asfr2"
             end
-        elseif algorithm == "as"
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                @warn "Symmetric rewardMatrix, consider setting algorithm = 'syfr'"
+        elseif algorithm != "syfr" && !pad && size(rewardMatrix, 1) == size(rewardMatrix, 2)
+            @info "Symmetric rewardMatrix with pad = false, algorithm = 'syfr' may be more efficient"
+        elseif algorithm == "syfr" && (size(rewardMatrix, 1) != size(rewardMatrix, 2) || pad)
+            @warn "Symmetric algorithm selected for asymmetric problem, setting algorithm to 'asfr2'"
+            algorithm = "asfr2"
+        end
+
+        #set epsiscale
+        if iszero(epsiscale) || epsiscale < zero(T)
+            if algorithm == "as"
+                @info "`epsiscale` not set or set incorrectly setting to 0.2"
+                epsiscale = 0.2
+            else
+                @info "Setting `epsiscale` not set or set incorrectly setting to 0.1"
+                epsiscale = 0.1
             end
-            astate, lambda = auction_assignment_as(rewardMatrix)
+        end
+
+        #set epsi0
+        if iszero(epsi0) || epsi0 < zero(T)
+            @info "`epsi0` not set or set incorrectly setting to maximum(rewardMatrix) * epsiscale"
+            epsi0 = maximum(astate.rowPrices) * epsiscale
+        end
+
+        #set epsitol
+        if iszero(epsitol) || epsitol < zero(T)
+            @info "`epsitol` not set or set incorrectly setting to 1 / size(rewardMatrix, 1)"
+            epsitol = T(inv(astate.nrow))
+        end
+
+        #call algorithm
+        if algorithm == "as"
+            if pad
+                astate, lambda = auction_assignment_padas(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
+            else
+                astate, lambda = auction_assignment_as(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
+            end
         elseif algorithm == "asfr1"
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                @warn "Symmetric rewardMatrix, consider setting algorithm = 'syfr'"
-            end
-            astate, lambda = auction_assignment_asfr1(rewardMatrix)
-        elseif algorithm == "asfr2"
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                @warn "Symmetric rewardMatrix, consider setting algorithm = 'syfr'"
-            end
-            astate, lambda = auction_assignment_asfr2(rewardMatrix)
-        elseif algorithm == "syfr"
-            if size(rewardMatrix, 1) != size(rewardMatrix, 2)
-                @warn "Symmetric algorithm selected for asymmetric problem, setting algorithm to 'asfr2'"
-                astate, lambda = auction_assignment_asfr2(rewardMatrix)
+            if pad
+                astate, lambda = auction_assignment_padasfr1(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
             else
-                astate, lambda = auction_assignment_syfr(rewardMatrix)
+                astate, lambda = auction_assignment_asfr1(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
             end
+        elseif algorithm == "asfr2"
+            if pad
+                astate, lambda = auction_assignment_padasfr2(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
+            else
+                astate, lambda = auction_assignment_asfr2(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
+            end
+        elseif algorithm == "syfr"
+            astate, lambda = auction_assignment_syfr(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
         else
             error("algorithm = $algorithm not supported. Set algorithm to one of 'as', 'asfr1', 'asfr2' or 'syfr'")
         end
@@ -1573,56 +1719,87 @@ function auction_assignment(rewardMatrix::Array{T, 2}; algorithm = "") where T <
     end
 end
 
-function auction_assignment(rewardMatrix::SparseMatrixCSC{T, G}; algorithm = "") where {G <: Integer, T <: AbstractFloat}
-    if size(rewardMatrix, 1) > size(rewardMatrix, 2)
-        @warn "more columns than rows, some rows will be unassigned"
-        if algorithm == ""
-            @warn "no algorithm specificed using 'asfr2'"
-            astate, lambda = auction_assignment_asfr2(permutedims(rewardMatrix, [2, 1]), rewardMatrix)
-        elseif algorithm == "as"
-            astate, lambda = auction_assignment_as(permutedims(rewardMatrix, [2, 1]), rewardMatrix)
-        elseif algorithm == "asfr1"
-            astate, lambda = auction_assignment_asfr1(permutedims(rewardMatrix, [2, 1]), rewardMatrix)
-        elseif algorithm == "asfr2"
-            astate, lambda = auction_assignment_asfr2(permutedims(rewardMatrix, [2, 1]), rewardMatrix)
-        elseif algorithm == "syfr"
-            @warn "Symmetric algorithm selected for asymmetric problem, setting algorithm to 'asfr2'"
-            astate, lambda = auction_assignment_asfr2(permutedims(rewardMatrix, [2, 1]), rewardMatrix)
-        else
-            error("algorithm = '$algorithm' not supported set algorithm to one of 'as', 'asfr1', or 'asfr2'")
+function auction_assignment(rewardMatrix::SparseMatrixCSC{T, G}; algorithm = "", pad = true, maximize = true, assign = true,
+                            epsi0::T = zero(T), epsitol::T = zero(T), epsiscale::T = zero(T),
+                            dfltReward::T = zero(T), dfltTwo::T = -T(Inf)) where {G <: Integer, T <: AbstractFloat}
+    if !pad
+        @warn "`pad = false` means that a feasible solution may not exist.  If error encountered consider rerunning with `pad = true`"
+    end
+    if !maximize
+        @info "Converting cost matrix to reward max"
+        if pad
+            @warn "`dflReward` in padding passed as is (not converted from cost)"
         end
+        return auction_algorithm(reward2cost(rewardMatrix), algorithm = algorithm, pad = pad, maximize = true, assign = assign, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
+    elseif !pad && size(rewardMatrix, 1) > size(rewardMatrix, 2)
+        @info "more columns than rows, some rows will be unassigned"
+        astate, lambda = auction_assignment(permutedims(rewardMatrix), algorithm = algorithm, pad = pad)
         return flip(astate), lambda
     else
+        astate = AssignmentState(rewardMatrix, maximize = true, assign = assign, pad = pad, dfltReward = dfltReward)
+
+        #set algorithm        
         if algorithm == ""
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                astate, lambda = auction_assignment_syfr(rewardMatrix)
+            if !pad && size(rewardMatrix, 1) == size(rewardMatrix, 2)
+                @info "No algorithm specified for symmetric rewardMatrix, setting algorithm = 'syfr'"
+                algorithm = "syfr"
             else
-                astate, lambda = auction_assignment_asfr2(rewardMatrix)
+                @info "No algorithm specified for asymmetric rewardMatrix, setting algorithm = 'asfr2'"
+                algorithm = "asfr2"
             end
-        elseif algorithm == "as"
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                @warn "Symmetric rewardMatrix, consider setting algorithm = 'syfr'"
+        elseif algorithm != "syfr" && !pad && size(rewardMatrix, 1) == size(rewardMatrix, 2)
+            @info "Symmetric rewardMatrix with pad = false, algorithm = 'syfr' may be more efficient"
+        elseif algorithm == "syfr" && (size(rewardMatrix, 1) != size(rewardMatrix, 2) || pad)
+            @warn "Symmetric algorithm selected for asymmetric problem, setting algorithm to 'asfr2'"
+            algorithm = "asfr2"
+        end
+
+        #set epsiscale
+        if iszero(epsiscale) || epsiscale < zero(T)
+            if algorithm == "as"
+                @info "`epsiscale` not set or set incorrectly setting to 0.2"
+                epsiscale = 0.2
+            else
+                @info "Setting `epsiscale` not set or set incorrectly setting to 0.1"
+                epsiscale = 0.1
             end
-            astate, lambda = auction_assignment_as(rewardMatrix)
+        end
+
+        #set epsi0
+        if iszero(epsi0) || epsi0 < zero(T)
+            @info "`epsi0` not set or set incorrectly setting to maximum(rewardMatrix) * epsiscale"
+            epsi0 = maximum(astate.rowPrices) * epsiscale
+        end
+
+        #set epsitol
+        if iszero(epsitol) || epsitol < zero(T)
+            @info "`epsitol` not set or set incorrectly setting to 1 / size(rewardMatrix, 1)"
+            epsitol = T(inv(astate.nrow))
+        end
+
+        #call algorithm
+        if algorithm == "as"
+            if pad
+                astate, lambda = auction_assignment_padas(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
+            else
+                astate, lambda = auction_assignment_as(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
+            end
         elseif algorithm == "asfr1"
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                @warn "Symmetric rewardMatrix, consider setting algorithm = 'syfr'"
-            end
-            astate, lambda = auction_assignment_asfr1(rewardMatrix)
-        elseif algorithm == "asfr2"
-            if size(rewardMatrix, 1) == size(rewardMatrix, 2)
-                @warn "Symmetric rewardMatrix, consider setting algorithm = 'syfr'"
-            end
-            astate, lambda = auction_assignment_asfr2(rewardMatrix)
-        elseif algorithm == "syfr"
-            if size(rewardMatrix, 1) != size(rewardMatrix, 2)
-                @warn "Symmetric algorithm selected for asymmetric problem, setting algorithm to 'asfr2'"
-                astate, lambda = auction_assignment_asfr2(rewardMatrix)
+            if pad
+                astate, lambda = auction_assignment_padasfr1(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
             else
-                astate, lambda = auction_assignment_syfr(rewardMatrix)
+                astate, lambda = auction_assignment_asfr1(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
             end
+        elseif algorithm == "asfr2"
+            if pad
+                astate, lambda = auction_assignment_padasfr2(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
+            else
+                astate, lambda = auction_assignment_asfr2(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltReward = dfltReward, dfltTwo = dfltTwo)
+            end
+        elseif algorithm == "syfr"
+            astate, lambda = auction_assignment_syfr(rewardMatrix, astate = astate, epsi0 = epsi0, epsitol = epsitol, epsiscale = epsiscale, dfltTwo = dfltTwo)
         else
-            error("algorithm = $algorithm not supported set algorithm to one of 'as', 'asfr1', 'asfr2' or 'syfr'")
+            error("algorithm = $algorithm not supported. Set algorithm to one of 'as', 'asfr1', 'asfr2' or 'syfr'")
         end
         return astate, lambda
     end

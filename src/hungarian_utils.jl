@@ -44,13 +44,20 @@ end
 
 Computes the adjusted  cost by calling the `adkisted_cost` function and then `iszero` if this returns false the function checks if the adjusted cost is within `max(eps(rowOffset[ii]), eps(colOffset[jj]))`.  The second check was added to deal with issues of numeric precision that arose in test cases.  
 """
+function zero_cost(ii::Integer, jj::Integer, costMatrix::Array{T, 2},
+                   rowOffsets::Array{T, 1},
+                   colOffsets::Array{T, 1}) where T <: AbstractFloat
+    return isapprox(adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets), zero(T))
+    #adjcost = adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
+    #if iszero(adjcost) || (abs(adjcost) < max(eps(rowOffsets[ii]), eps(colOffsets[jj])))
+    #    return true
+    #else
+    #    return false
+    #end
+end
+
 function zero_cost(ii::Integer, jj::Integer, costMatrix::Array{G, 2},
                    rowOffsets::Array{G, 1},
-                   colOffsets::Array{G, 1}) where G <: Real
-    adjcost = adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
-    if iszero(adjcost) || (abs(adjcost) < max(eps(rowOffsets[ii]), eps(colOffsets[jj])))
-        return true
-    else
-        return false
-    end
+                   colOffsets::Array{G, 1}) where G <: Integer
+    return iszero(adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets))
 end

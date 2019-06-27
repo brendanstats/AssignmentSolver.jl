@@ -1,250 +1,96 @@
-#using DataStructures
+"""
+    hungarian_assignment!(costMatrix::Array{T, 2}, astate::AssignmentState{G, T}; check::Bool = true, verbose::Bool = false) where {G <: Integer, T <: Real}
+
+Update `astate` to find a minimal assignment using a Hungarian algorithm.
+
+# Arguments
+
+* `costMatrix` : `Float` or `Integer` valued cost matrix for which a maximal assignment is found.
+* `astate::AssignmentState{G, T}`: State of assignment solution.
+* `check::Bool`: Should colPrices and rowPrices be checked to ensure starting point does not violate assumptions.
+* `verbose` : Optional `Bool` parameter controling if step and iteration should be reported.
+
+See also: [`hungarian_assignment`](@ref), [`auction_assignment`](@ref), [`AssignmentState`](@ref), [`step3!`](@ref), [`step4!`](@ref), [`step5!`](@ref), [`step6!`](@ref)
 
 """
-    lsap_solver_tracking(costMatrix::Array{G<:Real, 2}; verbose::Bool = false)
-
-### Arguments
-
-* `costMatrix` : `Float` or `Integer` valued cost matrix for which a maximal assignment is found
-* `verbose` : Optional `Bool` parameter controling if step and iteration should be reported
-
-### Details
-
-Based on Hungarian algorithm described by Bob Pilgrim at 
-http://csclab.murraystate.edu/~bob.pilgrim/445/munkres.html Returns maximal
-assignment for supplied cost Matrix.
-
-### Value
-
-    (starredRow2Col, rowOffsets, colOffsets)
-
-Where `starredRow2Col` contrains the column assignment for each row, note that if
-the number of rows in `costMatrix` is greater than the number of columns then some
-rows will not be assigned and `starredRow2Col` will contain zeros for unassigned
-rows.  `rowOffsets` and `colOffsets` are the dual variables corresponding to the
-solution found.  This version tracks the zeros in the adjusted cost matrix instead
-of re-computting them.  This reduces issue with numerical precision when a
-non-integer cost matrix is supplied.
-
-### Examples
-
-```julia
-
-```
-"""
-function lsap_solver_tracking(costMatrix::Array{T, 2}; verbose::Bool = false) where T <: Real
+function hungarian_assignment!(costMatrix::Array{T, 2}, astate::AssignmentState{G, T}; check::Bool = true, verbose::Bool = false) where {G <: Integer, T <: Real}
     
     ##Flip if more rows than columns
     if size(costMatrix, 1) > size(costMatrix, 2)
-        
+
         ##Find optimal assignment for transpose
-        astate = lsap_solver_tracking(costMatrix')
+        astate = hungarian_assignment(permutedims(costMatrix), flip(astate), check = check, verbose = verbose)
         
         return flip(astate)
     end
     
     ##Define algorithm variables
-    #astate = AssignmentState(costMatrix)
-    astate = AssignmentState(costMatrix, maximize = false, assign = true, pad = false)
     rowCover = falses(astate.nrow) #row covered true/false
     colCover = falses(astate.ncol) #column covered true/false
-    primedRow2Col = zeros(Int, astate.nrow) #either zero or column index of primed zero
-    minval = typemax(T) #tracking minimum value
-    zeroCol2Row = Dict{Int, Array{Int, 1}}()
-    for jj in 1:astate.ncol
-        zeroCol2Row[jj] = Int[]
+    primedRow2Col = zeros(G, astate.nrow) #either zero or column index of primed zero
+    minval = typemax(T)::T #tracking minimum value
+    zeroCol2Row = Dict{G, Array{G, 1}}()
+    for jj in one(G):astate.ncol
+        zeroCol2Row[jj] = G[]
     end
-    minPoints = Array{Tuple{Int, Int}, 1}(undef, 0)
-    colsUncovered = Array{Int}(undef, 0)
-    rowsUncovered = Array{Int}(undef, 0)
-    #for ii in 1:astate.nrow
-    #    astate.rowPrices[ii] = costMatrix[ii, one(Int)]
-    #    astate.r2c[ii] = one(Int)
-    #end
+    minPoints = Array{Tuple{G, G}, 1}(undef, 0)
+    colsUncovered = Array{G}(undef, 0)
+    rowsUncovered = Array{G}(undef, 0)
     
-    ##Find row minimums
-    #for jj in 1:astate.ncol, ii in 1:astate.nrow
-    #    if costMatrix[ii, jj] < astate.rowPrices[ii]
-    #        astate.rowPrices[ii] = costMatrix[ii, jj]
-    #        astate.r2c[ii] = jj #track row minimums for the moment
-    #    end
-    #end
+    ##Check that the row and column offsets are not too high at any point
+    if check
+        for jj in one(G):astate.ncol, ii in one(G):astate.nrow
+            if costMatrix[ii, jj] < (astate.rowPrices[ii] + astate.colPrices[jj])
+                @warn "cost $ii, $jj too high, increasing colPrices"
+                astate.colPrices[jj] = costMatrix[ii, jj] - astate.rowPrices[ii]
+                
+                if !iszero(astate.c2r[jj])
+                    astate.r2c[astate.c2r[jj]] = zero(G)
+                    astate.c2r[jj] = zero(G)
+                    astate.nassigned -= one(G)
+                end
 
+                if !iszero(astate.r2c[ii])
+                    astate.c2r[astate.r2c[ii]] = zero(G)
+                    astate.r2c[ii] = zero(G)
+                    astate.nassigned -= one(G)
+                end
+            end
+        end
+
+        for ii in one(G):astate.nrow
+            if !iszero(astate.r2c)
+                if !zero_cost(ii, astate,r2c[ii], costMatrix, astate.rowPrices, astate.colPrices)
+                    @warn "adjusted cost for assignment at row $ii non-zero, removing assignment"
+                    astate.c2r[astate.r2c[ii]] = zero(G)
+                    astate.r2c[ii] = zero(G)
+                    astate.nassigned -= one(G)
+                end
+            end
+        end
+    end
+    
     ##Find all zeros
-    for jj in 1:astate.ncol, ii in 1:astate.nrow
-        if costMatrix[ii, jj] <= astate.rowPrices[ii]
+    for jj in one(G):astate.ncol, ii in one(G):astate.nrow
+        if zero_cost(ii, jj, costMatrix, astate.rowPrices, astate.colPrices)
             push!(zeroCol2Row[jj], ii)
+            if iszero(astate.r2c[ii]) && iszero(astate.c2r[jj])
+                astate.r2c[ii] = jj
+                astate.c2r[jj] = ii
+            end
         end
     end
 
     ##Cover rows and columns
-    for ii in 1:astate.nrow
+    for ii in one(G):astate.nrow
         if !iszero(astate.r2c[ii])
-    #    if !colCover[astate.r2c[ii]]
-    #        astate.c2r[astate.r2c[ii]] = ii
             rowCover[ii] = true
             colCover[astate.r2c[ii]] = true
-    #    else
-    #        astate.r2c[ii] = zero(Int)
-            #    end
         end
     end
-
-    ##Check remaining zeros
-    for jj in 1:astate.ncol
-        for ii in zeroCol2Row[jj]
-            if !rowCover[ii] && !colCover[jj]
-                rowCover[ii] = true
-                colCover[jj] = true
-                astate.r2c[ii] = jj
-                astate.c2r[jj] = ii
-            end
-        end
         
-        ##Add still uncovered columns to column ids
-        if !colCover[jj]
-            push!(colsUncovered, jj)
-        end
-    end
-
-    ##Check if initial assignment is optimal
-    if sum(colCover) == astate.nrow
-        nstep = 7
-    else
-        nstep = 4
-    end
-
-    ##Uncover all rows
-    for ii in 1:astate.nrow
-        push!(rowsUncovered, ii)
-        if rowCover[ii]
-            rowCover[ii] = false
-        end
-    end
-
-    iter = 0
-    while true
-        iter += 1
-        if verbose
-            println("Iteration: $iter")
-            println("step = ", nstep)
-        end
-        if nstep == 3
-            nstep = step3_tracking!(colCover, astate, colsUncovered)
-        elseif nstep == 4
-            nstep, minval, minPoints = step4_tracking!(costMatrix,
-                                                       astate,
-                                                       rowCover, colCover,
-                                                       primedRow2Col,
-                                                       zeroCol2Row,
-                                                       minval, minPoints,
-                                                       colsUncovered, rowsUncovered)
-        elseif nstep == 5
-            nstep = step5_tracking!(rowCover, colCover,
-                           astate,
-                           primedRow2Col,
-                           minPoints, rowsUncovered)
-        elseif nstep == 6
-            nstep = step6_tracking!(astate, rowCover, colCover,
-                           zeroCol2Row, minval, minPoints)
-        elseif nstep == 7
-            break
-        else
-            error("Non-listed step introduced")
-        end
-        if verbose
-            ctrow = count(rowCover)
-            ctcol = count(colCover)
-            ct = astate.nrow - count(iszero.(astate.r2c))
-            if length(minPoints) > 1
-                println("Value: $minval, Assigned: $ct, Covered Rows: $ctrow, Covered Cols: $ctcol")
-            else
-                println("Value: $minval, Assigned: $ct, Covered Rows: $ctrow, Covered Cols: $ctcol, Point: $minPoints")
-            end
-            println("")
-        end
-    end
-
-    return astate
-end
-
-"""
-    lsap_solver_tracking!(costMatrix::Array{G, 2},
-                          astate.rowPrices::Array{G, 1},
-                          astate.colPrices::Array{G, 1},
-                          rowInitial::Array{Int, 1} = zeros(Int, size(costMatrix, 1));
-                          check::Bool = true,
-                          verbose::Bool = false) where G <: Real
-"""
-function lsap_solver_tracking!(costMatrix::Array{T, 2},
-                               astate::AssignmentState{G, T};
-                               check::Bool = true,
-                               verbose::Bool = false) where {G <: Integer, T <: Real}
-    
-    ##Flip if more rows than columns
-    if size(costMatrix, 1) > size(costMatrix, 2)
-
-        ##Switch initial assignment from rows map to column
-
-        ##Find optimal assignment for transpose
-        astate = lsap_solver_tracking(costMatrix', flip(astate), check = check, verbose = verbose)
-        
-        return flip(astate)
-    end
-    
-    ##Define algorithm variables
-    #astate.nrow, astate.ncol = size(costMatrix) #set matrix dimensions
-    rowCover = falses(astate.nrow) #row covered true/false
-    colCover = falses(astate.ncol) #column covered true/false
-    #astate.r2c = zeros(Int, astate.nrow) #either zero or column index of starred zero
-    #astate.c2r = zeros(Int, astate.ncol) #either zero or row index of starred zero
-    primedRow2Col = zeros(Int, astate.nrow) #either zero or column index of primed zero
-    minval = typemax(T)::T #tracking minimum value
-    zeroCol2Row = Dict{Int, Array{Int, 1}}()
-    for jj in 1:astate.ncol
-        zeroCol2Row[jj] = Int[]
-    end
-    minPoints = Array{Tuple{Int, Int}, 1}(undef, 0)
-    colsUncovered = Array{Int}(undef, 0)
-    rowsUncovered = Array{Int}(undef, 0)
-    
-    ##Find row minimums
-    for jj in 1:astate.ncol, ii in 1:astate.nrow
-        if costMatrix[ii, jj] < astate.rowPrices[ii]
-            astate.rowPrices[ii] = costMatrix[ii, jj]
-        end
-    end
-    
-    ##Check that the row and column offsets are not too high at any point
-    if check
-        for jj in 1:astate.ncol, ii in 1:astate.nrow
-            if costMatrix[ii, jj] < (astate.rowPrices[ii] + astate.colPrices[jj])
-                astate.colPrices[jj] = costMatrix[ii, jj] - astate.rowPrices[ii]
-            end
-        end
-    end
-    
-    ##Find all zeros
-    for jj in 1:astate.ncol, ii in 1:astate.nrow
-        if zero_cost(ii, jj, costMatrix, astate.rowPrices, astate.colPrices)
-            push!(zeroCol2Row[jj], ii)
-        end
-    end
-
-    ##Initialize with supplied assignments, checking that they still meet assignment criteria
-    for (ii, jj) in enumerate(IndexLinear(), astate.r2c)
-        if !iszero(jj) && !colCover[jj]
-            if zero_cost(ii, jj, costMatrix, astate)
-                rowCover[ii] = true
-                colCover[jj] = true
-                astate.r2c[ii] = jj
-                astate.c2r[jj] = ii
-            end
-        end
-    end
-    
     ##Check remaining zeros
-    for jj in 1:astate.ncol
+    for jj in one(G):astate.ncol
         for ii in zeroCol2Row[jj]
             if !rowCover[ii] && !colCover[jj]
                 rowCover[ii] = true
@@ -269,7 +115,7 @@ function lsap_solver_tracking!(costMatrix::Array{T, 2},
     end
 
     ##Uncover all rows
-    for ii in 1:astate.nrow
+    for ii in one(G):astate.nrow
         push!(rowsUncovered, ii)
         if rowCover[ii]
             rowCover[ii] = false
@@ -284,24 +130,13 @@ function lsap_solver_tracking!(costMatrix::Array{T, 2},
             println("step = ", nstep)
         end
         if nstep == 3
-            nstep = step3_tracking!(colCover, astate, colsUncovered)
+            nstep = step3!(colCover, astate, colsUncovered)
         elseif nstep == 4
-            nstep, minval, minPoints = step4_tracking!(costMatrix,
-                                                       astate,
-                                                       rowCover, colCover,
-                                                       primedRow2Col,
-                                                       zeroCol2Row,
-                                                       minval, minPoints,
-                                                       colsUncovered, rowsUncovered)
+            nstep, minval, minPoints = step4!(costMatrix, astate, rowCover, colCover, primedRow2Col, zeroCol2Row, minval, minPoints, colsUncovered, rowsUncovered)
         elseif nstep == 5
-            nstep = step5_tracking!(rowCover, colCover,
-                           astate,
-                           primedRow2Col,
-                           minPoints, rowsUncovered)
+            nstep = step5!(rowCover, colCover, astate, primedRow2Col, minPoints, rowsUncovered)
         elseif nstep == 6
-            nstep = step6_tracking!(astate,
-                           rowCover, colCover,
-                           zeroCol2Row, minval, minPoints)
+            nstep = step6!(astate, rowCover, colCover, zeroCol2Row, minval, minPoints)
         elseif nstep == 7
             break
         else
@@ -323,26 +158,57 @@ function lsap_solver_tracking!(costMatrix::Array{T, 2},
     return astate
 end
 
-function lsap_solver_tracking(costMatrix::Array{T, 2},
-                              astate::AssignmentState{G, T};
-                              check::Bool = true,
-                              verbose::Bool = false) where {G <: Integer, T <: Real}
+"""
+    hungarian_assignment(costMatrix::Array{G<:Real, 2}; verbose::Bool = false)
+
+Find minimal assignment for costMatrix as a `AssignmentState` object using a Hungarian algorithm.
+
+Wrapper which calls `hungarian_assignment!` after initializing via `AssignmentState(cstMatrxi)`
+with options `maximize = false`, `assign = true`, and `pad = false`.  If `costMatrix` contains
+more rows than columns then the matrix is tranposed (via `permutedims`) and the solution is then
+converted back (via `flip`) leaving some rows unassigned (but assigning all columns).
+
+# Arguments
+
+* `costMatrix` : `Float` or `Integer` valued cost matrix for which a maximal assignment is found
+* `verbose` : Optional `Bool` parameter controling if step and iteration should be reported
+
+See also: [`hungarian_assignment!`](@ref), [`auction_assignment`](@ref), [`AssignmentState`](@ref)
+
+# Examples
+
+```julia
+
+```
+"""
+function hungarian_assignment(costMatrix::Array{T, 2}; verbose::Bool = false) where T <: Real
     
-    return lsap_solver_tracking!(costMatrix, deepcopy(astate), check = check, verbose = verbose)
+    ##Flip if more rows than columns
+    if size(costMatrix, 1) > size(costMatrix, 2)
+        
+        ##Find optimal assignment for transpose
+        @info "more columns than rows, some rows will be unassigned"
+        astate = hungarian_assignment(permutedims(costMatrix), verbose = verbose)
+        
+        return flip(astate)
+    end
+    
+    ##Define algorithm variables
+    astate = AssignmentState(costMatrix, maximize = false, assign = true, pad = false)
+    return hungarian_assignment!(costMatrix, astate; check = false, verbose = verbose)
+    
 end
 
-
-
 """
-    step3!(colCover, astate.r2c, astate.nrow, m) -> step 3
+    step3!(colCover::BitArray{1}, astate::AssignmentState{G, T}, colsUncovered::Array{G, 1}) where {G <: Integer, T <: Real}
 
 Internal function for assignment solver, returns number of the next step in the
 algorithm.  Returns 7 (terminates algorithm) if the number of covered columns is
 equal to the number of rows, otherwise returns 4
+
+See also: [`step4!`](@ref), [`step5!`](@ref), [`step6!`](@ref)
 """
-function step3_tracking!(colCover::BitArray{1},
-                astate::AssignmentState{G, T},
-                colsUncovered::Array{Int, 1}) where {G <: Integer, T <: Real}
+function step3!(colCover::BitArray{1}, astate::AssignmentState{G, T}, colsUncovered::Array{G, 1}) where {G <: Integer, T <: Real}
     
     ##Non-zero values for astate.r2c are columns with starred zeros
     #switch to updating colsUncovered
@@ -367,23 +233,19 @@ function step3_tracking!(colCover::BitArray{1},
 end
 
 """
-    step4!(costMatrix, astate.rowPrices, astate.colPrices, rowCover, colCover,
-           astate.r2c, astate.c2r, primedRow2Col,
-           minval, minrow, mincol, astate.nrow, m) -> step, minval, minrow, mincol
+    step4!(costMatrix::Array{T, 2}, astate::AssignmentState{G, T}, rowCover::BitArray{1}, colCover::BitArray{1},
+           primedRow2Col::Array{G, 1}, zeroCol2Row::Dict{G, Array{G, 1}}, minval::T, minPoints::Array{Tuple{G, G}, 1},
+           colsUncovered::Array{G, 1}, rowsUncovered::Array{G, 1}) where {G <: Integer, T <: Real}
 
 Find 0's where cost[ii, jj] == astate.rowPrices[ii] + astate.colPrices[jj].  If
 cover row ii and column jj are false set them to true and star 0.
 When staring add to astate.r2c and astate.c2r
+
+See also: [`step3!`](@ref), [`step5!`](@ref), [`step6!`](@ref)
 """
-function step4_tracking!(costMatrix::Array{T, 2},
-                         astate::AssignmentState{G, T},
-                         rowCover::BitArray{1},
-                         colCover::BitArray{1},
-                         primedRow2Col::Array{Int, 1},
-                         zeroCol2Row::Dict{Int, Array{Int, 1}},
-                         minval::T,
-                         minPoints::Array{Tuple{Int, Int}, 1},
-                         colsUncovered::Array{Int, 1}, rowsUncovered::Array{Int, 1}) where {G <: Integer, T <: Real}
+function step4!(costMatrix::Array{T, 2}, astate::AssignmentState{G, T}, rowCover::BitArray{1}, colCover::BitArray{1},
+                primedRow2Col::Array{G, 1}, zeroCol2Row::Dict{G, Array{G, 1}}, minval::T, minPoints::Array{Tuple{G, G}, 1},
+                colsUncovered::Array{G, 1}, rowsUncovered::Array{G, 1}) where {G <: Integer, T <: Real}
 
     ##value defaults
     empty!(minPoints)
@@ -447,24 +309,23 @@ function step4_tracking!(costMatrix::Array{T, 2},
 end
 
 """
-    step5!(rowCover, colCover, astate.r2c, astate.c2r,
-           primedRow2Col, minrow, mincol, astate.nrow, m) -> 3
+    step5!(rowCover::BitArray{1}, colCover::BitArray{1}, astate::AssignmentState{G, T},
+           primedRow2Col::Array{G, 1}, minPoints::Array{Tuple{G, G}, 1}, rowsUncovered::Array{G, 1}) where {G <: Integer, T <: Real} 
 
 Find 0's where cost[ii, jj] == astate.rowPrices[ii] + astate.colPrices[jj].  If
 cover row ii and column jj are false set them to true and star 0.
 When staring add to astate.r2c and astate.c2r
+
+See also: [`step3!`](@ref), [`step4!`](@ref), [`step6!`](@ref)
 """
-function step5_tracking!(rowCover::BitArray{1}, colCover::BitArray{1},
-                         astate::AssignmentState{G, T},
-                         primedRow2Col::Array{Int, 1},
-                         minPoints::Array{Tuple{Int, Int}, 1},
-                         rowsUncovered::Array{Int, 1}) where {G <: Integer, T <: Real} 
+function step5!(rowCover::BitArray{1}, colCover::BitArray{1}, astate::AssignmentState{G, T},
+                primedRow2Col::Array{G, 1}, minPoints::Array{Tuple{G, G}, 1}, rowsUncovered::Array{G, 1}) where {G <: Integer, T <: Real} 
 
     ##initialize array for tracking sequence, alternating primed and starred
-    primedRows = Int[minPoints[1][1]]
-    primedCols = Int[minPoints[1][2]]
-    starredRows = Int[]
-    starredCols = Int[]
+    primedRows = G[minPoints[1][1]]
+    primedCols = G[minPoints[1][2]]
+    starredRows = G[]
+    starredCols = G[]
 
     ##If no starred zero in row terminate, otherwise add starred zero and the primed
     ##zero in the column of the starred zero.  Continue until terminations...
@@ -489,14 +350,14 @@ function step5_tracking!(rowCover::BitArray{1}, colCover::BitArray{1},
     end
 
     ##Initial primed zero has no corresponding starred zero in column so star it
-    astate.r2c[minPoints[1][1]] = minPoints[1][2]::Int
-    astate.c2r[minPoints[1][2]] = minPoints[1][1]::Int
+    astate.r2c[minPoints[1][1]] = minPoints[1][2]::G
+    astate.c2r[minPoints[1][2]] = minPoints[1][1]::G
     
     ##Erase all primes
     primedRow2Col[:] .= zero(G)
     
     ##uncover every line in the matrix
-    for ii in 1:astate.nrow
+    for ii in one(G):astate.nrow
         if rowCover[ii]
             rowCover[ii] = false
             push!(rowsUncovered, ii)
@@ -507,32 +368,32 @@ function step5_tracking!(rowCover::BitArray{1}, colCover::BitArray{1},
 end
 
 """
-    step6!(astate.rowPrices, astate.colPrices, rowCover, colCover, minval) -> 4
+    step6!(astate::AssignmentState{G, T}, rowCover::BitArray{1}, colCover::BitArray{1},
+           zeroCol2Row::Dict{G, Array{G, 1}}, minval::T, minPoints::Array{Tuple{G, G}, 1}) where {G <: Integer, T <: Real}
 
+Adjust offsets by smalled value found in `step4`
 
+See also: [`step3!`](@ref), [`step4!`](@ref), [`step5!`](@ref)
 """
-function step6_tracking!(astate::AssignmentState{G, T},
-                         rowCover::BitArray{1},
-                         colCover::BitArray{1},
-                         zeroCol2Row::Dict{Int, Array{Int, 1}},
-                         minval::T,
-                         minPoints::Array{Tuple{Int, Int}, 1}) where {G <: Integer, T <: Real}
+function step6!(astate::AssignmentState{G, T}, rowCover::BitArray{1}, colCover::BitArray{1},
+                zeroCol2Row::Dict{G, Array{G, 1}}, minval::T, minPoints::Array{Tuple{G, G}, 1}) where {G <: Integer, T <: Real}
+
     ##Add min to (subtract from offset) all elements in covered rows
-    for ii in 1:astate.nrow
+    for ii in one(G):astate.nrow
         if rowCover[ii]
             astate.rowPrices[ii] -= minval
         end
     end
     
     ##Subtract min from (add to offset) all elements in uncovered columns
-    for jj in 1:astate.ncol
+    for jj in one(G):astate.ncol
         if !colCover[jj]
             astate.colPrices[jj] += minval
         end
     end
 
     #Remove zeros that where rowCover and colCover are both covered
-    for jj in 1:astate.ncol
+    for jj in one(G):astate.ncol
         if colCover[jj]
             rows = zeroCol2Row[jj]
             if length(rows) > 0

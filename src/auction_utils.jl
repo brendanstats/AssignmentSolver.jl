@@ -124,71 +124,6 @@ function maxtwo_column(col::G, rowPrices::Array{T, 1}, rewardMatrix::Union{Spars
     end
 end
 
-#=
-"""
-padded maxtwo_row
-"""
-function maxtwo_row(row::G, colPrices::Array{T, 1}, padPrices::Array{T, 1}, trewardMatrix::SparseMatrixCSC{T, G}, dfltReward::T, dfltTwo::T) where {G <: Integer, T <: AbstractFloat}
-
-    ##Row edges and values
-    rng = nzrange(trewardMatrix, row)
-    cols = rowvals(trewardMatrix)
-    rewards = nonzeros(trewardMatrix)
-    padval = dfltReward - padPrices[row]
-    
-    ##Case where padded value is the only value
-    if length(rng) == 0
-        #-1 index indicates that padded entry has been used
-        return -one(G), padval, dfltTwo
-    end
-
-    ##Case where padded value is the second value
-    if length(rng) == 1
-        val = rewards[rng[1]] - colPrices[cols[rng[1]]]
-        if val >= padval
-            return rng[1], val, padval
-        else
-            return -one(G), padval, val
-        end
-    end
-
-    ##Initialize maxval and maxidx
-    maxidx = rng[1]
-    maxval = rewards[maxidx] - colPrices[cols[maxidx]]
-
-    ##Initialize maxtwo
-    val = rewards[rng[2]] - colPrices[cols[rng[2]]]
-    if val > maxval
-        maxtwo = maxval
-        maxval = val
-        maxidx = rng[2]
-    else
-        maxtwo = val
-    end
-    
-    #Loop over remaining values
-    for idx in rng[3:end]
-        col = cols[idx]
-        val = rewards[idx] - colPrices[col]
-        if val > maxval
-            maxtwo = maxval
-            maxval = val
-            maxidx = idx
-        elseif val > maxtwo
-            maxtwo = val
-        end
-    end
-
-    if padval > maxval
-        return -one(G), padval, maxval
-    elseif padval > maxtwo
-        return maxidx, maxval, padval
-    else
-        return maxidx, maxval, maxtwo
-    end
-end
-=#
-
 """
     maxtwo_row(col::Integer, rowPrices::Array{T, 1}, rewardMatrix::Array{T, 2}) where T <: AbstractFloat -> (maxidx::G, maxval::T, maxtwo::T)
     maxtwo_row(col::Integer, rowPrices::Array{T, 1}, rewardMatrix::Array{T, 2}, dfltTwo::T) where T <: AbstractFloat -> (maxidx::G, maxval::T, maxtwo::T)
@@ -312,64 +247,41 @@ function maxtwo_row(row::G, colPrices::Array{T, 1}, trewardMatrix::SparseMatrixC
 end
 
 """
-    get_openrows(r2c::Array{G, 1}) where G <: Integer
+    get_zeros(x::Array{G, 1}) where G <: Integer
 
-### Arguments
+Construct a Queue containing the indicies for which `iszero(x[ii])`
 
-* `r2c` : Array where `r2c[ii]` contains the column row `ii` is assigned
-    to zero if row `ii` is currently unasssigned
+See also: [`get_openrows`](@ref), [`get_opencols`](@ref)
 
-### Details
-
-Counts number of assigned rows and also generates a queue containing the indicies
-of all unassigned rows.
-
-### Value
-
-    `(nassigned::G, openRows::Queue{G})`
-
-* `nassign` : Indicator for whether an additional (net) assignment has been added
-* `openRows` : Queue of unassigned rows
-
-### Examples
-
-```julia
-get_openrows([0, 0, 3, 1, 0, 0])
-#Returns (2, Queue{Int64}(Deque [[1, 2, 5, 6]]))
-```
 """
-function get_openrows(r2c::Array{G, 1}) where G <: Integer
-    nassigned = zero(G)
-    openRows = Queue{G}()
-    for ii in 1:length(r2c)
-        if iszero(r2c[ii])
-            enqueue!(openRows, ii)
-        else
-            nassigned += one(G)
+function get_zeros(x::Array{G, 1}) where G <: Integer
+    zeroIdx = Queue{G}()
+    for (ii, xi) in pairs(x)
+        if iszero(xi)
+            enqueue!(zeroIdx, ii)
         end
     end
-    return nassigned, openRows
+    return zeroIdx
 end
 
-function get_openrows(astate::AssignmentState{G, T}) where {G <: Integer, T <: AbstractFloat}
-    openRows = Queue{G}()
-    for ii in one(G):astate.nrow
-        if iszero(astate.r2c[ii])
-            enqueue!(openRows, ii)
-        end
-    end
-    return openRows
-end
+"""
+    get_openrows(astate::AssignmentState)
 
-function get_opencols(astate::AssignmentState{G, T}) where {G <: Integer, T <: AbstractFloat}
-    openCols = Queue{G}()
-    for jj in one(G):astate.ncol
-        if iszero(astate.c2r[jj])
-            enqueue!(openCols, jj)
-        end
-    end
-    return openCols
-end
+Construct  a Queue containing indicies for which `astate.r2c[idx] == 0`, wrapper around `get_zeros`
+
+See also: [`get_zeros`](@ref), [`get_opencols`](@ref)
+"""
+get_openrows(astate::AssignmentState) = get_zeros(astate.r2c)
+
+"""
+    get_opencols(astate::AssignmentState)
+
+Construct a Queue containing indicies for which `astate.c2r[idx] == 0`, wrapper around `get_zeros`
+
+See also: [`get_zeros`](@ref), [`get_openrows`](@ref)
+
+"""
+get_opencols(astate::AssignmentState) = get_zeros(astate.c2r)
 
 """
     get_opencolsabove(c2r::Array{G, 1}, colPrices::Array{T, 1}, lambda::T) where {G <: Integer, T <: AbstractFloat} -> nbelow, openColsAbove
@@ -411,14 +323,14 @@ end
 get_nbelow_opencolsabove(astate::AssignmentState{G, T}, lambda::T) where {G <: Integer, T <: AbstractFloat} = get_nbelow_opencolsabove(astate.c2r, astate.colPrices, lambda)
 
 """
-    findrowmax(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat} -> rowMaximum, rowMaximumIdx
-    findrowmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat} -> rowMaximum, rowMaximumIdx
+    findrowmax(rewardMatrix::Array{T, 2}) where {T <: Real} -> rowMaximum, rowMaximumIdx
+    findrowmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real} -> rowMaximum, rowMaximumIdx
 
 Return vector of row maximums and corresponding column number, similar to `findmax(rewardMatrix, dims=1)`
 but with only the columns recorded. For sparse matrix if no entry is observed in a row the
 value is set to `-T(Inf)` and the index is set to zero.
 """
-function findrowmax(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
+function findrowmax(rewardMatrix::Array{T, 2}) where {T <: Real}
     rowMaximum = rewardMatrix[:, 1]
     rowMaximumIdx = ones(Int, size(rewardMatrix, 1))
     for jj in 2:size(rewardMatrix, 2)
@@ -432,7 +344,7 @@ function findrowmax(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
     return rowMaximum, rowMaximumIdx
 end
 
-function findrowmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat}
+function findrowmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real}
     
     rowMaximum = fill(T(-Inf), rewardMatrix.m)
     rowMaximumIdx = zeros(G, rewardMatrix.m)
@@ -455,14 +367,14 @@ function findrowmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T 
 end
 
 """
-    findrowmin(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat} -> rowMinimum, rowMinimumIdx
-    findrowmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat} -> rowMinimum, rowMinimumIdx
+    findrowmin(rewardMatrix::Array{T, 2}) where {T <: Real} -> rowMinimum, rowMinimumIdx
+    findrowmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real} -> rowMinimum, rowMinimumIdx
 
 Return vector of row minimums and corresponding column number, similar to `findmin(rewardMatrix, dims=1)`
 but with only the columns recorded. For sparse matrix if no entry is observed in a row the
 value is set to `T(Inf)` and the index is set to zero.
 """
-function findrowmin(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
+function findrowmin(rewardMatrix::Array{T, 2}) where {T <: Real}
     rowMinimum = rewardMatrix[:, 1]
     rowMinimumIdx = ones(Int, size(rewardMatrix, 1))
     for jj in 1:size(rewardMatrix, 2)
@@ -476,7 +388,7 @@ function findrowmin(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
     return rowMinimum, rowMinimumIdx
 end
 
-function findrowmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat}
+function findrowmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real}
     
     rowMinimums = fill(G(Inf), rewardMatrix.m)
     rowMinimumIdx = zeros(G, rewardMatrix.m)
@@ -500,14 +412,14 @@ end
 
 
 """
-    findcolmax(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat} -> colMaximum, colMaximumIdx
-    findcolmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat} -> colMaximum, colMaximumIdx
+    findcolmax(rewardMatrix::Array{T, 2}) where {T <: Real} -> colMaximum, colMaximumIdx
+    findcolmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real} -> colMaximum, colMaximumIdx
 
 Return vector of column maximums and corresponding row number, similar to `findmax(rewardMatrix, dims=2)`
 but with only the rowss recorded.  For sparse matrix if no entry is observed in a column both the
 value and the index are set to zero.
 """
-function findcolmax(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
+function findcolmax(rewardMatrix::Array{T, 2}) where {T <: Real}
     colMaximum = rewardMatrix[1, :]
     colMaximumIdx = ones(Int, size(rewardMatrix, 2))    
     
@@ -522,7 +434,7 @@ function findcolmax(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
     return colMaximum, colMaximumIdx
 end
 
-function findcolmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat}
+function findcolmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real}
     
     colMaximum = zeros(T, rewardMatrix.n)
     colMaximumIdx = zeros(G, rewardMatrix.n)
@@ -542,14 +454,14 @@ function findcolmax(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T 
 end
 
 """
-    findcolmin(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat} -> colMinimum, colMinimumIdx
-    findcolmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat} -> colMinimum, colMinimumIdx
+    findcolmin(rewardMatrix::Array{T, 2}) where {T <: Real} -> colMinimum, colMinimumIdx
+    findcolmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real} -> colMinimum, colMinimumIdx
 
 Return vector of column minimums and corresponding row ids, similar to `findmin(rewardMatrix, dims=2)`
 but with only the rowss recorded.  For sparse matrix if no entry is observed in a column both the
 value and the index are set to zero.
 """
-function findcolmin(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
+function findcolmin(rewardMatrix::Array{T, 2}) where {T <: Real}
     colMinimum = rewardMatrix[1, :]
     colMinimumIdx = ones(Int, size(rewardMatrix, 2))    
     
@@ -564,7 +476,7 @@ function findcolmin(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
     return colMinimum, colMinimumIdx
 end
 
-function findcolmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat}
+function findcolmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real}
     
     colMinimum = zeros(T, rewardMatrix.n)
     colMinimumIdx = zeros(G, rewardMatrix.n)
@@ -584,13 +496,13 @@ function findcolmin(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T 
 end
 
 """
-    dimmaximums(rewardMatrix::Array{T, 2}) where {G <: Integer, T <: AbstractFloat} -> rowMaximums, colMaximums
+    dimmaximums(rewardMatrix::Array{T, 2}) where {G <: Integer, T <: Real} -> rowMaximums, colMaximums
 
 Simultaneously calculate the maximum over both the rows and the columns of a matrix
 `x = rand(4, 5)`
 `rowMax, colMax = dimmaximums(x)`
 """
-function dimmaximums(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
+function dimmaximums(rewardMatrix::Array{T, 2}) where {T <: Real}
 
     rowMaximums = zeros(T, size(rewardMatrix, 1))
     colMaximums = zeros(T, size(rewardMatrix, 2))
@@ -610,7 +522,7 @@ function dimmaximums(rewardMatrix::Array{T, 2}) where {T <: AbstractFloat}
     return rowMaximums, colMaximums
 end
 
-function dimmaximums(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: AbstractFloat}
+function dimmaximums(rewardMatrix::SparseMatrixCSC{T, G}) where {G <: Integer, T <: Real}
     rowMaximums = zeros(T, rewardMatrix.m)
     colMaximums = zeros(T, rewardMatrix.n)
 
@@ -641,7 +553,7 @@ end
 Tranpose (using permutedims) sparse matrix and return non-transformed full matrix.
 """
 function forward_rewardmatrix(rewardMatrix::SparseMatrixCSC)
-    return permutedims(rewardMatrix, [2, 1])
+    return permutedims(rewardMatrix)
 end
 
 function forward_rewardmatrix(rewardMatrix::Matrix)
@@ -666,9 +578,6 @@ function scale_assignment!(astate::AssignmentState{G, T}, epsi::T, epsiscale::T)
             astate.nassigned -= one(G)
         end
     end
-    #rowPrices are increased so that complimentary slackness is maintained with smaller epsilon
-    
-    #astate = clear_assignment!(astate)
     return astate, newepsi
 end
 
@@ -678,6 +587,7 @@ end
 Return the minimum `astate.colPrices` for which `astate.c2r` is nonzero.  Assumes that `state.r2c` contains all nonzero values.
 """
 function min_assigned_colprice(astate::AssignmentState{G, T}) where {G <: Integer, T <: Real}
+    
     lambda = astate.colPrices[astate.r2c[1]]
     if astate.nrow > one(G)
         for ii in G(2):astate.nrow
@@ -708,7 +618,10 @@ function check_epsilons(epsi0::T, epsitol::T, epsiscale::T) where T <: AbstractF
 end
 
 """
+    check_epsilon_slackness(astate::AssignmentState{G, T}, rewardMatrix::Array{T, 2}, epsilon::T) where {G <: Integer, T <: AbstractFloat} -> (consistent::Bool, outrows::Array{Int, 1}, outcols::Array{Int, 1})
+    check_epsilon_slackness(astate::AssignmentState{G, T}, rewardMatrix::SparseMatrixCSC{T, G}, epsilon::T) where {G <: Integer, T <: AbstractFloat} -> (consistent::Bool, outrows::Array{Int, 1}, outcols::Array{Int, 1})
 
+Check epsilon-slackness conditions of rewardMatrix[ii, jj] - epsilon <= astate.rowPrices[ii] + astate.colPrices[jj].  If `consistent` is false then `outrows` and `outcols` will contain the entries for which epsilon-slackness is violated.
 """
 function check_epsilon_slackness(astate::AssignmentState{G, T}, rewardMatrix::Array{T, 2}, epsilon::T) where {G <: Integer, T <: AbstractFloat}
     consistent = true
