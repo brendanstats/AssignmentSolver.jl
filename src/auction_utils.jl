@@ -584,14 +584,19 @@ end
 """
     min_assigned_colprice(astate::AssignmentState{G, T}) where {G <: Integer, T <: Real} -> lambda
 
-Return the minimum `astate.colPrices` for which `astate.c2r` is nonzero.  Assumes that `state.r2c` contains all nonzero values.
+Return the minimum `astate.colPrices` for which `astate.c2r` is nonzero.  Returns zero if `astate.nassigned == 0`
 """
 function min_assigned_colprice(astate::AssignmentState{G, T}) where {G <: Integer, T <: Real}
-    
-    lambda = astate.colPrices[astate.r2c[1]]
-    if astate.nrow > one(G)
-        for ii in G(2):astate.nrow
-            if astate.colPrices[astate.r2c[ii]] < lambda
+
+    if iszero(astate.nassigned)
+        return zero(T)
+    end
+
+    idx = findfirst(c -> !iszero(c), astate.r2c)
+    lambda = astate.colPrices[astate.r2c[idx]]
+    if astate.nassigned > one(G)
+        for ii in (G(idx) + one(G)):astate.nrow
+            if !iszero(astate.r2c[ii]) && astate.colPrices[astate.r2c[ii]] < lambda
                 lambda = astate.colPrices[astate.r2c[ii]]
             end
         end

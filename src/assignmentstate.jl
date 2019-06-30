@@ -184,6 +184,43 @@ function clear_assignment!(astate::AssignmentState{G, T}) where {G <: Integer, T
 end
 
 """
+    function adjust_inf!(astate::Assignment{G, T}, lambda::T = zero(T), dfltReward::T = zero(T)) where {G <: Integer, T <: Real}
+
+Finds rows for which `isinf(astate.rowPrices[row])`, sets row prices to `dfltReward - lambda` and of the assigned column prices to `lambda`.
+
+This is intended to be used as a post-processing function for case where `dfltTwo = Inf` but finite prices are needed
+for downstream applications.  The `Inf` is taken to indicate that only a single column was available to the row and only
+a single row available to the column.  Only appropriate for use if algorithm was run with `pad = true`.
+"""
+function adjust_inf!(astate::AssignmentState{G, T}, lambda::T = zero(T), dfltReward::T = zero(T)) where {G <: Integer, T <: Real}
+    for ii in one(G):astate.nrow
+        if isinf(astate.rowPrices[ii])
+            astate.rowPrices[ii] = dfltReward - lambda
+            astate.colPrices[astate.r2c[ii]] = lambda
+        end
+    end
+    return astate
+end
+
+"""
+    remove_padded!(astate::Assignment{G, T}, ncol::Integer) where {G <: Integer, T <: Real}
+
+Removes assignments to padded, implicitly added, columns where `ncol` is the original number of columns.
+
+This is intended to be used as a post-processing function if padded columns are added to allow rows to remain unassigned.
+"""
+function remove_padded!(astate::AssignmentState{G, T}, ncol::Integer) where {G <: Integer, T <: Real}
+    for ii in one(G):astate.nrow
+        if astate.r2c[ii] > ncol
+            astate.c2r[astate.r2c[ii]] = zero(G)
+            astate.r2c[ii] = zero(G)
+            astate.nassigned -= one(G)
+        end
+    end
+    return astate
+end
+
+"""
     flip(astate::AssignmentState{G, T}) where {G <: Integer, T <: Real} -> AssignmentState{G, T}
 
 Take transpose of `astate` 

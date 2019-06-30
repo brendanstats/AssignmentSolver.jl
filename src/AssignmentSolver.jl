@@ -5,6 +5,8 @@ using SparseArrays
 
 export AssignmentState,
     clear_assignment!,
+    adjust_inf!,
+    remove_padded!,
     flip,
     compute_objective,
     pad_matrix,
