@@ -23,7 +23,7 @@ end
 function adjusted_cost(costMatrix::Array{G, 2},
                        rowOffsets::Array{G, 1},
                        colOffsets::Array{G, 1}) where G <: Real
-    out = Array{G}(size(costMatrix))
+    out = similar(costMatrix)
     for jj in 1:length(colOffsets), ii in 1:length(rowOffsets)
         out[ii, jj] = costMatrix[ii, jj] - (rowOffsets[ii] + colOffsets[jj])
     end
@@ -32,7 +32,7 @@ end
 
 function adjusted_cost(costMatrix::Array{T, 2},
                        astate::AssignmentState{G, T}) where {G <: Integer, T <: Real}
-    out = Array{T}(size(costMatrix))
+    out = similar(costMatrix)
     for jj in 1:astate.ncol, ii in 1:astate.nrow
         out[ii, jj] = costMatrix[ii, jj] - (astate.rowPrices[ii] + astate.colPrices[jj])
     end
@@ -47,7 +47,9 @@ Computes the adjusted  cost by calling the `adkisted_cost` function and then `is
 function zero_cost(ii::Integer, jj::Integer, costMatrix::Array{T, 2},
                    rowOffsets::Array{T, 1},
                    colOffsets::Array{T, 1}) where T <: AbstractFloat
-    return isapprox(adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets), zero(T))
+    offsettot = rowOffsets[ii] + colOffsets[jj]
+    return (costMatrix[ii, jj] == offsettot) || isapprox(costMatrix[ii, jj], offsettot)
+    #return isapprox(adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets), zero(T))
     #adjcost = adjusted_cost(ii, jj, costMatrix, rowOffsets, colOffsets)
     #if iszero(adjcost) || (abs(adjcost) < max(eps(rowOffsets[ii]), eps(colOffsets[jj])))
     #    return true
