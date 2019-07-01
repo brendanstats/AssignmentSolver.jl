@@ -667,3 +667,24 @@ function check_epsilon_slackness(astate::AssignmentState{G, T}, rewardMatrix::Sp
     end
     return consistent, outrows, outcols
 end
+
+"""
+    tuple_r2c(r2c::Array{G, 1})
+    tuple_r2c(astate::AssignmentState)
+
+Construct a tuple (rows, cols) of the row-column assignments.
+"""
+function tuple_r2c(r2c::Array{G, 1})
+    rows = G[]
+    cols = G[]
+    for (ii, jj) in pairs(r2c)
+        if !izero(jj)
+            push!(rows, ii)
+            push!(cols, jj)
+        end
+    end
+    return rows, cols
+end
+
+tuple_r2c(astate::AssignmentState) = tuple_r2c(astate.r2c)
+

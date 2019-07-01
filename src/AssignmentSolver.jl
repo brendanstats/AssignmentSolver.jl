@@ -35,7 +35,8 @@ export maxtwo_column,
     scale_assignment!,
     min_assigned_colprice,
     check_epsilons,
-    check_epsilon_slackness
+    check_epsilon_slackness,
+    tuple_r2c
 export forward_bid,
     reverse_bid,
     forward_update!,
