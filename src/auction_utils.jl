@@ -674,7 +674,7 @@ end
 
 Construct a tuple (rows, cols) of the row-column assignments.
 """
-function tuple_r2c(r2c::Array{G, 1})
+function tuple_r2c(r2c::Array{G, 1}) where G <: Integer
     rows = G[]
     cols = G[]
     for (ii, jj) in pairs(r2c)
